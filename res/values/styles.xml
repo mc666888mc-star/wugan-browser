@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 底部弹出菜单：圆角深色 + slide-up 进场动画 -->
+    <style name="BottomMenu" parent="android:Theme.Material.Dialog">
+        <item name="android:windowAnimationStyle">@style/BottomAnim</item>
+        <item name="android:windowBackground">@drawable/menu_bg</item>
+        <item name="android:windowIsFloating">false</item>
+    </style>
+    <style name="BottomAnim">
+        <item name="android:windowEnterAnimation">@anim/slide_up</item>
+        <item name="android:windowExitAnimation">@anim/slide_down</item>
+    </style>
+</resources>
