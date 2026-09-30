@@ -1,23 +1,48 @@
-# 无感浏览器
+# 无感浏览器 · Wugan Browser
 
-基于系统 WebView 的真内核浏览器 + 无障碍自动点选，目标是**让 Cloudflare 验证尽量少弹、弹了也自动点掉**，省去手动等待和点勾的时间。
+[中文版](#中文版) ｜ [English](#english-version)
 
-包名：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖（手工构建链，见 `build.sh`）
-当前版本：v6.0（versionCode 6）
+> 让 Cloudflare 验证尽量少弹、弹了也自动点掉的真内核浏览器。
+> A real-kernel browser that keeps Cloudflare challenges away — and auto-taps the ones that slip through.
 
-## 它做了什么
+- 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
+- 当前版本 / Current version：v8.4（versionCode 12）
+- 开源协议 / License：GPLv3
+
+---
+
+## 中文版
+
+### 它做了什么
 
 1. **真浏览器内核**：用系统 WebView（就是 Chrome 内核），不是自动化工具。Cloudflare 眼里是正常手机浏览器。
 2. **UA 去 WebView 标记**：把 UA 里的 `; wv` 去掉，看起来像原生 Chrome Mobile。**保持移动端 UA，不伪装桌面**（UA 和 TLS 指纹表里不一反而更容易被拦）。
 3. **Cookie 持久化**：`cf_clearance`（验证通过凭证）落盘保存，同一站点二次访问直接放行，不用重复验证。
-4. **自动点选**：`ChallengeTapService`（无障碍服务）检测到验证页里的复选框会自动点一下，15 秒内只点一次，切窗口重置。v2 扩展了关键词，能识别内嵌式 Turnstile 挂件（如 dash.cloudflare.com 注册页的"请验证您是真人"）。
+4. **自动点选**：`ChallengeTapService`（无障碍服务）检测到验证页里的复选框会自动点一下，15 秒内只点一次，切窗口重置。v2 扩展了关键词，能识别内嵌式 Turnstile 挂件。
 5. **零 JS 注入**：页面里不注入任何脚本（注入脚本本身就是可检测的指纹）。
-6. **浏览历史**：SQLite 记录访问历史（时间+标题+网址），工具栏「历史」查看，点击回到浏览器打开，一键清空。
-7. **无痕模式**：工具栏「无痕」开关。开启后不记录历史；关闭退出时清除 Cookie/缓存/网页历史。注意：这是"退出即清"的会话级无痕。
-8. **域名级广告拦截**：`AdBlocker` 在 `shouldInterceptRequest` 按域名拦截（精确+子域名后缀匹配），内置 StevenBlack 完整规则（约 7.4 万条），默认开启，可一键开关。工具栏「更新规则」从网络下载最新规则（主源 StevenBlack，备用 someonewhocares），更新后 Toast 显示条数。
-9. **视频嗅探 + 内置播放器**：被动嗅探页面中的直链视频（.mp4/.m3u8/.webm/.mov/.flv/.m4v），状态栏提示"嗅探到视频(n)，点击播放"，点击进内置播放器（VideoView+MediaController，原生支持 HLS），右上角一键横竖屏切换。
+6. **Edge 式双栏工具栏**（v8）：顶部地址行 = 搜索引擎胶囊 + 加宽输入框 + 刷新/停止二合一按钮（加载中显示 ✕ 点停，加载完变刷新）；底部导航行 = 后退 / 前进 / 主页 / 新标签 / 标签页数 / ⋯菜单。
+7. **浏览历史 + 收藏夹**：SQLite 记录，点击打开，一键清空；网址列表里 %XX 编码会解码成中文显示（v8.2）。
+8. **无痕模式**：开启后不记录历史；退出时清除 Cookie/缓存/网页历史（会话级无痕）。
+9. **域名级广告拦截**：`shouldInterceptRequest` 按域名拦截（精确 + 子域名后缀匹配），内置 StevenBlack 完整规则（约 7.4 万条），默认开启，可一键开关、在线更新。
+10. **视频嗅探 + 内置播放器**：被动嗅探页面中的直链视频（.mp4/.m3u8/.webm/.mov/.flv/.m4v），状态栏提示"点击播放"，进内置播放器（VideoView + MediaController，原生支持 HLS），一键横竖屏。
+11. **本地壁纸主页**：全离线壁纸库，可从相册选图、长按网页图片设为壁纸，支持轮换（v5/v7）。
+12. **中英双语**（v8.4）：英文系统全英文显示（Wugan Browser），中文系统不受影响，其他语言默认回退中文。
 
-## 诚实说明（先看完再装）
+⋯ 菜单：收藏夹 / 历史 / 共享 / 下载 / 设置 / 添加到收藏夹 / 桌面版网站 / 页内查找 / 大声朗读 / 新标签页 / 无痕新标签页 / 广告拦截开关 / 更新规则 / 下载此页面 / 添加至手机 / 退出浏览器 / 更换壁纸
+
+### 🎬 关于内置播放器：为什么我们选择"克制"？
+
+很多用户可能会问：作为一个浏览器，为什么内置的视频播放器看起来这么"简陋"？没有弹幕、没有投屏、也不能后台悬浮播放？
+
+其实，这是刻意为之。在对抗 Cloudflare 等高级 WAF 的场景下，"少即是多"不仅是一种美学，更是生存法则。
+
+1. **被动嗅探，绝不主动出击**：我们不会去强行解析网页 DOM，也不会尝试破解加密流。只有当网页自己正常加载了直链（如 `.mp4` 或 `.m3u8`）时，我们才会在底层默默捕获。不增加任何额外的网络请求，完美隐身，绝不触发风控。
+2. **坚守原生，拒绝"巨无霸"**：我们只使用了 Android 系统原生的 `VideoView` + `MediaController`。没有引入动辄几 MB 的第三方解码库，没有申请 `SYSTEM_ALERT_WINDOW`（悬浮窗）等敏感权限。它加载、播放、退出，绝不后台驻留，不收集任何播放数据。
+3. **守住边界，不越俎代庖**：我们清楚自己的定位。我们只是一个帮你把网页里掉落的视频顺手播放的工具，而不是一个臃肿的短视频平台。
+
+真正的强大，不是无所不能，而是清楚地知道什么*不该做*。保持轻量，保持无感。
+
+### 诚实说明（先看完再装）
 
 - **做不到"一次都不弹"**：弹不弹是 Cloudflare 服务端决定的，权重排序是 IP 信誉 > 站点安全等级 > 指纹一致性。这个 App 只优化第 3 项。
 - **IP 仍是老大**：走机房/代理 IP，该弹还是弹；手机流量直连基本不弹。
@@ -25,13 +50,13 @@
 - **广告拦截是域名级的**：只拦请求，不做元素隐藏/CSS 注入，所以广告位可能留白块——这是故意的，为了不污染页面指纹。
 - **无障碍权限要手动开**：安装后去「设置 → 无障碍 → 无感浏览器自动点选」打开开关，否则自动点选不工作（浏览器本身不受影响）。
 
-## 安装
+### 安装
 
-1. 把 `无感浏览器.apk` 传到手机，点安装（允许"安装未知应用"）。v2 与 v1 同签名，可直接覆盖安装。
-2. 打开 App，地址栏输网址，「进入」。
+1. 把 `无感浏览器.apk` 传到手机，点安装（允许"安装未知应用"）。同签名，可直接覆盖安装。
+2. 打开 App，地址栏输网址，回车。
 3. （可选）设置 → 无障碍 → 开启「无感浏览器自动点选」。
 
-## 构建
+### 构建
 
 ```bash
 cd ~/workspace/stealth-browser
@@ -42,64 +67,180 @@ bash build.sh
 签名 keystore 在项目根 `debug.keystore`（常驻，不进 `out/`，保证覆盖安装不报签名冲突）。
 广告规则源文件在 `assets/adblock_hosts.txt`（构建时打进 APK，首次运行拷贝到应用私有目录后使用）。
 
-## 开源协议
+### 开源协议
 
 GPLv3（见 `LICENSE` 文件）。
 
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
-## v8.4 更新日志（中英双语）
+### 更新日志
 
-- **英文本地化**：`res/values/strings.xml`（中文默认）+ `res/values-en/strings.xml`（英文），共约 130 条文案；手机系统语言为英文时 App 内全部文案（菜单、按钮、toast、对话框、设置项、壁纸、播放器）显示英文，应用名显示 Wugan Browser；中文系统不受影响
-- **抽取方式**：Java 硬编码中文全部换成 `getString(R.string.xxx)`，layout 硬编码换成 `@string/xxx`；带参数的用占位符（`%1$s`/`%1$d`），如"广告规则已更新：%1$d 条"；搜索引擎 chip 的"谷歌"按语言显示 Google/谷歌
-- **不动**：`ChallengeTapService` 的检测关键词（功能性匹配文本，非 UI）、所有功能逻辑；Log 日志中文保留
+#### v8.4（中英双语）
 
-## v8 更新日志（Edge 式双栏工具栏）
+- 142 条文案抽成 `res/values/strings.xml`（中文默认）+ `res/values-en/strings.xml`（英文）；英文系统全英文显示，中文系统不受影响，其他语言默认回退中文
+- 带参数文案用占位符（`%1$s` / `%1$d`）；搜索引擎 chip 的"谷歌"按语言显示 Google/谷歌
+- 不动：`ChallengeTapService` 检测关键词（功能性文本）、Log 日志中文
 
-- **工具栏改 Edge 式双栏**：顶部地址行 = [引擎 chip][地址 EditText 撑满加宽][刷新/停止二合一按钮]；底部导航行 = [后退][前进][主页][新标签 +][标签页数][⋯菜单]，6 图标均分宽度。顶部不再放后退/前进/tab/菜单，不挤了
-- **刷新/停止二合一**：页面加载中显示 ✕（点一下 `stopLoading()`），加载完成显示刷新图标（点击 `reload()`）；`onPageStarted` / `onPageFinished` / `onReceivedError`（主 frame）切换图标；单 WebView 复用，切 tab 时按实际进度同步一次
-- **主页按钮**：当前 tab 加载主页（壁纸页），图标 Material "home"（Round 白版）
-- **地址栏位置设置保留**：顶部（默认）= 地址行在上、导航行在下；底部 = 地址行移到下方、叠在导航行上面；复用 `applyToolbarPosition()` 的 reparent 思路
-- **地址栏点一下必全选**：`selectAllOnFocus` + 焦点监听里 `post(selectAll)`（等焦点稳定）+ 已有焦点时点击也 `selectAll()`，方便一键删掉重输；弹键盘、回车跳转逻辑不变
+#### v8.3
 
-## v6 更新日志（翻译移除 + 地址栏搜索引擎快捷切换）
+- 修"Cloudflare 验证中"在正常页面（GitHub 等）误弹：之前靠标题含"验证"判断，标题常是上一页旧标题；改成只认验证页网址
 
-- **⋯ 菜单：翻译 → 设置**：翻译（走 translate.google.com，国内网络连不上直接超时）删除，`translateCurrent()` 及 `ic_translate.png` 一并移除；B 行第 4 个位置换成"设置"，直达 Edge 化设置页
-- **地址栏头部搜索引擎快捷切换**：地址栏左侧新增小胶囊 chip（Bing / Yandex / 谷歌 / Duck），点一下弹菜单四选一（当前项打勾），切换后 Toast 提示；与设置页"搜索引擎"分组共用同一 prefs key，onResume 双向实时同步
-- **搜索引擎顺序**：Bing / Yandex / Google / DuckDuckGo（微软 Bing 放最前面），新安装默认 Bing（他网络 Bing 最稳，Google 连不上）；老用户已存的偏好不受影响，点 chip 一下就能切
+#### v8.2
 
-## v5 更新日志（地址栏直输 + 默认顶部 + 本地壁纸库 + Edge 化设置页）
+- 历史/收藏列表的网址解码显示（`%E5%AE%B9` 这类不再像乱码），超长截断；只改显示，不改存的数据
 
-- **地址栏直输**：工具栏地址 pill 从 TextView 换成 EditText，平时显示当前网址，点一下全选+弹键盘，回车（IME Go）直接跳转，"前往"对话框删除；页面加载完成时若正在打字（有焦点）不刷新地址栏，避免打断输入
-- **地址栏默认位置改顶部**：新安装默认顶部（老用户已存偏好不受影响）；设置 → 外观和布局 里仍可切顶部/底部
-- **主页壁纸模式（全本地/离线）**：`assets/home.html` 重写为全屏壁纸 + 毛玻璃卡片（标题/提示/壁纸站快捷入口 Wallhaven / Unsplash / Pexels / Bing Wallpaper）；默认壁纸 `assets/default_wallpaper.jpg` 首次启动拷入 `getFilesDir()/wallpapers/` 壁纸库
-- **壁纸库管理**（`WallpaperManager`）：菜单"更换壁纸"用相册图片入库并设为当前；设置页"壁纸"组可更换/轮换（每次打开主页换下一张，序号持久化循环）/管理（缩略图网格，点设为当前、长按删除）；网页长按图片 → "设为壁纸"（后台下载，只收 http/https，data: 等给明确提示）；库空时主页用深色渐变兜底
-- **设置页 Edge 化**：分组图标行 —— 外观和布局 / 搜索引擎 / 壁纸 / 隐私和安全 / 无障碍 / 设为默认浏览器（跳系统默认应用设置）/ 关于（v5.0，GPLv3，Material Icons 出处保留）
+#### v8.1
 
-## v4 更新日志（UI 美术打磨 + 地址栏/搜索引擎可设置）
+- 地址栏只有第一次点击才全选，再点正常放光标（之前"每次点都全选"太粗暴，已 revert）
 
-- 图标全面换装：菜单/工具栏 24 个图标统一换成 Google Material Icons（Round 风格白色），替换掉原来参差不齐的系统图标
-- UI 去生硬：底部菜单圆角加大（24dp）+ 深色微透明、地址 pill 加细描边、图标与文字间距规范、所有可点项涟漪反馈、标签页对话框同样打磨
-- 地址栏位置可设置：设置 → 地址栏位置 → 顶部 / 底部（默认底部），返回浏览器即时生效
-- 默认搜索引擎可换：设置 → 默认搜索引擎 → Google / Bing / DuckDuckGo / **Yandex**（默认 Google）；地址栏输入关键词时按所选引擎搜索，像网址（含点且无空格）则直接加载
-- 起始页 `assets/home.html` 美化（幽灵 + 标语 + 使用提示）
+#### v8（Edge 式双栏工具栏）
 
-## v3 更新日志（Edge 风格 UI 重构）
+- 顶部地址行 = [引擎 chip][加宽输入框][刷新/停止二合一]；底部导航行 = [后退][前进][主页][新标签 +][标签页数][⋯菜单]
+- 刷新/停止二合一：加载中显示 ✕（点停），加载完变刷新图标
+- 新增主页按钮；地址栏位置设置保留（顶部默认/底部）；关于页版本号改为读取 versionName
 
-- 深色 Edge 风界面：WebView 占满 + 顶部细进度条 + 悬浮状态条，底部深色工具栏（后退/前进/地址 pill/标签数/⋯菜单），v2 顶部旧工具栏删除
-- 底部弹出菜单（slide-up 动画，圆角深色）：收藏夹 / 历史 / 共享 / 下载 / 设置 / 添加到收藏夹 / 桌面版网站 / 页内查找 / 翻译 / 大声朗读 / 新标签页 / 无痕新标签页 / 广告拦截开关 / 更新规则 / 下载此页面 / 添加至手机 / 退出浏览器
-- 多标签页（上限 10 个，单 WebView 复用，标签列表可切换/关闭/新建）；无痕标签页不写历史、关闭时清 cookie 痕迹
-- 收藏夹（SQLite，点击打开、长按删除）；下载走系统 DownloadManager（通知栏可见）；"下载"直达系统下载管理
-- 桌面版网站一键切换 UA；页内查找浮动条（findAllAsync）；翻译走谷歌翻译新标签页；大声朗读（TTS，一次性取正文，不常驻注入）
-- 设置页：广告拦截开关、无痕模式开关（退出即清逻辑不变）、清除浏览数据、无障碍服务状态+一键跳转、关于
-- 新标签页默认页：`assets/home.html` 极简深色主页
-- **诚实说明**：默认移动端 UA 是为了指纹一致（UA 与 TLS 指纹表里不一更容易触发验证）；手动切桌面版 UA 可能增加验证概率，按需使用
+#### v7
 
-## v2 更新日志
+- 主页去掉中间大卡片，纯壁纸
 
-- 自动点选关键词大扩展：覆盖内嵌式 Turnstile（"请验证您是真人"/"turnstile"/"我不是机器人"等），复选框判定放宽（文本命中或"验证页+CheckBox 类名"）
-- 新增浏览历史（SQLite，去重，一键清空）
-- 新增无痕模式（退出即清 Cookie/缓存/历史）
-- 新增域名级广告拦截（7.4 万条内置规则，可开关，可在线更新）
-- 新增视频嗅探 + 内置播放器（m3u8/HLS，横竖屏切换）
-- 应用图标：`res/mipmap-xxxhdpi/ic_launcher.png`
+#### v6
+
+- ⋯ 菜单"翻译"删除（国内网络连不上谷歌翻译），换回"设置"
+- 地址栏头部搜索引擎快捷切换胶囊（Bing / Yandex / Google / DuckDuckGo，Bing 置顶，新安装默认 Bing）
+
+#### v5
+
+- 地址栏直输（EditText，点一下全选+弹键盘，回车跳转）
+- 主页壁纸模式（全本地/离线）：壁纸库、相册选图、长按网页图设为壁纸、轮换、壁纸管理
+- 设置页 Edge 化（外观和布局 / 搜索引擎 / 壁纸 / 隐私和安全 / 无障碍 / 设为默认浏览器 / 关于）
+
+#### v4
+
+- 24 个图标统一换 Google Material Icons（Round 白版）；UI 去生硬（圆角/间距/涟漪反馈）
+- 地址栏位置可设置（顶部/底部）；默认搜索引擎可换（Google / Bing / DuckDuckGo / Yandex）
+
+#### v3
+
+- Edge 风格 UI：底部工具栏 + slide-up 菜单；多标签页（上限 10）；收藏夹；系统 DownloadManager 下载；桌面版 UA 切换；页内查找；TTS 朗读；设置页
+
+#### v2
+
+- 自动点选关键词扩展（内嵌式 Turnstile）；浏览历史；无痕模式；域名级广告拦截（StevenBlack 7.4 万条）；视频嗅探 + 内置播放器；定制幽灵图标
+
+---
+
+## English Version
+
+### What it does
+
+1. **Real browser core**: built on the system WebView (i.e. Chrome) — not automation tooling. To Cloudflare it looks like an ordinary mobile browser.
+2. **De-WebView'd UA**: strips the `; wv` token so it reads as stock Chrome Mobile. **Stays mobile — no desktop spoofing** (a desktop UA over a mobile TLS fingerprint is *more* suspicious).
+3. **Persistent cookies**: `cf_clearance` is saved to disk, so repeat visits to the same site sail through without re-verification.
+4. **Auto-tap**: `ChallengeTapService` (an AccessibilityService) taps verification checkboxes for you — at most once per 15 s, reset on window change. v2 expanded the keyword list to catch embedded Turnstile widgets.
+5. **Zero JS injection**: nothing is ever injected into pages (injected scripts are themselves a detectable fingerprint).
+6. **Edge-style dual toolbar** (v8): top address row = search-engine chip + wide input + refresh/stop combo button (✕ while loading, refresh when done); bottom nav row = back / forward / home / new tab / tab count / ⋯ menu.
+7. **History + bookmarks**: SQLite-backed, tap to reopen, one-tap clear; percent-encoded URLs are decoded for display (v8.2).
+8. **Incognito**: no history while on; cookies/cache/history wiped on exit (session-level).
+9. **Domain-level ad blocking**: blocked in `shouldInterceptRequest` (exact + subdomain-suffix matching), bundled with the full StevenBlack list (~74k rules), on by default, one-tap toggle, updatable online.
+10. **Video sniffing + built-in player**: passively sniffs direct video links (.mp4/.m3u8/.webm/.mov/.flv/.m4v), status-bar prompt to play, built-in player (VideoView + MediaController, native HLS), one-tap landscape/portrait.
+11. **Local wallpaper home**: fully offline wallpaper library — pick from gallery, long-press any web image to set as wallpaper, rotation supported (v5/v7).
+12. **Bilingual** (v8.4): full English UI on English-system devices (as "Wugan Browser"); Chinese elsewhere.
+
+⋯ menu: Bookmarks / History / Share / Downloads / Settings / Add to bookmarks / Desktop site / Find in page / Read aloud / New tab / New incognito tab / Ad blocker toggle / Update rules / Save page / Add to home screen / Exit / Change wallpaper
+
+### 🎬 About the Built-in Player: Why We Chose "Restraint"
+
+You might wonder why a browser's built-in video player looks so… minimalist. No danmaku, no casting, no floating window?
+
+It's strictly by design. When your whole product is about staying under the radar of advanced WAFs like Cloudflare, "less is more" isn't just an aesthetic — it's a survival rule.
+
+1. **Passive sniffing, never active probing.** We don't parse the DOM or crack encrypted streams. We only pick up direct links (`.mp4`, `.m3u8`, …) that the page itself loads naturally — silently, at the network layer. Zero extra requests, zero new fingerprints, zero reason to trip anti-bot systems.
+2. **Stock Android, no bloat.** Just `VideoView` + `MediaController` from the OS. No multi-megabyte third-party decoder SDKs, no sensitive permissions like `SYSTEM_ALERT_WINDOW`. It loads, it plays, it exits. No background lingering, no playback telemetry.
+3. **Know your place.** We're a handy tool that plays a video that happened to fall out of a webpage — not a bloated streaming platform.
+
+True power isn't being able to do everything; it's knowing exactly what *not* to do. Stay lightweight, stay imperceptible.
+
+### Please read before installing
+
+- **It can't guarantee zero challenges.** Whether a challenge appears is decided by Cloudflare's servers. Rough priority: IP reputation > site security level > fingerprint consistency. This app only optimizes the third.
+- **IP still rules.** On datacenter/proxy IPs you'll still get challenged; on direct mobile data you mostly won't.
+- **Auto-tap is heuristic.** It handles checkbox-style Turnstile (including embedded widgets); pure countdown challenges ("Just a moment" spinners) need no tapping — just wait; extreme cases (Under Attack Mode) make everyone wait.
+- **Ad blocking is domain-level.** Requests are blocked, elements aren't hidden — so ad slots may show as blank boxes. Deliberate: no page-fingerprint pollution.
+- **Enable the accessibility service manually**: Settings → Accessibility → turn on "Wugan Browser auto-tap". The browser works fine without it; only auto-tap needs it.
+
+### Install
+
+1. Copy `无感浏览器.apk` to your phone and install (allow "install unknown apps"). Same signature across versions — installs right over the old one.
+2. Open the app, type a URL in the address bar, hit enter.
+3. (Optional) Settings → Accessibility → enable "Wugan Browser auto-tap".
+
+### Build
+
+```bash
+cd ~/workspace/stealth-browser
+bash build.sh
+```
+
+Requires: JDK 17 (`build.sh` hardcodes the PATH), `~/Android/Sdk` (platforms/android-34 + build-tools/34.0.0).
+The signing keystore lives at the project root as `debug.keystore` (kept out of `out/` so re-signing never breaks overlay installs).
+Ad-block rules source: `assets/adblock_hosts.txt` (packed into the APK, copied to the app's private dir on first run).
+
+### License
+
+GPLv3 (see `LICENSE`).
+
+Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
+
+### Changelog
+
+#### v8.4 (bilingual)
+
+- 142 strings extracted into `res/values/strings.xml` (Chinese default) + `res/values-en/strings.xml` (English); full English UI on English-system devices as "Wugan Browser"; everything else falls back to Chinese
+- Parameterized strings use `%1$s` / `%1$d`; the engine chip shows Google/谷歌 per locale
+- Untouched: `ChallengeTapService` detection keywords (functional, not UI), Chinese log messages
+
+#### v8.3
+
+- Fixed false "Verifying with Cloudflare…" toasts on normal pages (e.g. GitHub): detection used to match the word "verify" in the page title, which is often stale from the previous page; now URL-based only
+
+#### v8.2
+
+- History/bookmark list decodes percent-encoded URLs for display (no more `%E5%AE%B9` gibberish), truncates overlong URLs; display-only, stored data untouched
+
+#### v8.1
+
+- Address bar selects all only on first tap; later taps place the cursor normally (the "always select all" was too aggressive — reverted)
+
+#### v8 (Edge-style dual toolbar)
+
+- Top address row = [engine chip][wide input][refresh/stop combo]; bottom nav row = [back][forward][home][new tab +][tab count][⋯ menu]
+- Refresh/stop combo: ✕ while loading (stops it), refresh icon when done
+- New home button; address-bar position setting kept (top default / bottom); About page now reads versionName
+
+#### v7
+
+- Home page: removed the middle card, pure wallpaper
+
+#### v6
+
+- ⋯ menu: removed Translate (unreachable from CN networks), restored Settings
+- Engine quick-switch chip in the address bar (Bing / Yandex / Google / DuckDuckGo, Bing first, Bing default on fresh installs)
+
+#### v5
+
+- Direct-edit address bar (EditText, tap-to-select-all + keyboard, enter to go)
+- Wallpaper home (fully local/offline): wallpaper library, gallery pick, long-press web image to set, rotation, management
+- Edge-style Settings (Appearance & layout / Search engine / Wallpaper / Privacy & security / Accessibility / Default browser / About)
+
+#### v4
+
+- All 24 icons replaced with Google Material Icons (Round, white); UI polish (corners/spacing/ripples)
+- Address-bar position setting (top/bottom); switchable default search engine (Google / Bing / DuckDuckGo / Yandex)
+
+#### v3
+
+- Edge-style UI: bottom toolbar + slide-up menu; multi-tab (max 10); bookmarks; system DownloadManager; desktop-UA toggle; find in page; TTS read-aloud; Settings page
+
+#### v2
+
+- Auto-tap keyword expansion (embedded Turnstile); browsing history; incognito; domain-level ad blocking (StevenBlack, ~74k rules); video sniffing + built-in player; custom ghost icon
