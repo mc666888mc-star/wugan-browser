@@ -107,9 +107,12 @@ public class MainActivity extends Activity {
     private EditText addressPill;
     private TextView engineChip;
     private TextView tabsCount;
+    private ImageView refreshButton;
     private LinearLayout findBar;
     private EditText findInput;
     private boolean addrBarTop = true;
+    /** v8：页面是否正在加载（驱动刷新/停止二合一按钮） */
+    private boolean pageLoading = false;
 
     private HistoryDbHelper historyDb;
     private BookmarkDbHelper bookmarkDb;
@@ -186,12 +189,21 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** 按偏好把工具栏放到顶部或底部 */
+    /** v8：按偏好排两行。顶部模式=地址行在上、导航行在下；
+     * 底部模式=地址行移到下方、叠在导航行上面。 */
     private void applyToolbarPosition() {
         LinearLayout root = findViewById(R.id.root_container);
-        LinearLayout toolbar = findViewById(R.id.toolbar_container);
-        root.removeView(toolbar);
-        root.addView(toolbar, addrBarTop ? 0 : root.getChildCount());
+        LinearLayout addressRow = findViewById(R.id.address_row);
+        LinearLayout navRow = findViewById(R.id.nav_row);
+        root.removeView(addressRow);
+        root.removeView(navRow);
+        if (addrBarTop) {
+            root.addView(addressRow, 0);
+            root.addView(navRow);
+        } else {
+            root.addView(addressRow);
+            root.addView(navRow);
+        }
     }
 
     @Override
@@ -266,7 +278,7 @@ public class MainActivity extends Activity {
         pm.show();
     }
 
-    // ================= 底部工具栏 =================
+    // ================= v8：地址行 + 底部导航行 =================
 
     private void setupBottomBar() {
         // v6：地址栏左侧搜索引擎快捷切换 chip
@@ -277,6 +289,21 @@ public class MainActivity extends Activity {
             }
         });
         refreshEngineChip();
+        // v8：刷新/停止二合一按钮
+        refreshButton = findViewById(R.id.refresh_button);
+        updateRefreshButton();
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (pageLoading) {
+                    webView.stopLoading();
+                    pageLoading = false;
+                    updateRefreshButton();
+                } else {
+                    webView.reload();
+                }
+            }
+        });
         findViewById(R.id.back_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -293,12 +320,29 @@ public class MainActivity extends Activity {
                 }
             }
         });
+        // v8：底部导航行——主页 / 新标签页
+        findViewById(R.id.home_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadInCurrentTab(HOME_URL);
+            }
+        });
+        findViewById(R.id.newtab_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                newTab(HOME_URL, false);
+            }
+        });
         addressPill.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-                    // 点一下：全选当前网址 + 弹键盘
-                    addressPill.selectAll();
+                    // v8：点一下全选（post 到焦点稳定后执行，否则可能被系统覆盖）
+                    addressPill.post(new Runnable() {
+                        @Override public void run() {
+                            addressPill.selectAll();
+                        }
+                    });
                     InputMethodManager imm = (InputMethodManager)
                             getSystemService(INPUT_METHOD_SERVICE);
                     if (imm != null) {
@@ -307,6 +351,15 @@ public class MainActivity extends Activity {
                     }
                 } else {
                     hideKeyboard(addressPill);
+                }
+            }
+        });
+        // v8：已经是焦点状态时（比如从别处点回来），点一下也全选
+        addressPill.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (addressPill.hasFocus()) {
+                    addressPill.selectAll();
                 }
             }
         });
@@ -348,6 +401,24 @@ public class MainActivity extends Activity {
 
     private void updateTabsButton() {
         tabsCount.setText(String.valueOf(tabs.size()));
+    }
+
+    /** v8：刷新/停止二合一按钮图标切换（加载中=✕停止，加载完=刷新）。 */
+    private void updateRefreshButton() {
+        if (refreshButton == null) {
+            return;
+        }
+        refreshButton.setImageResource(
+                pageLoading ? R.drawable.ic_close : R.drawable.ic_refresh);
+        refreshButton.setContentDescription(pageLoading ? "停止加载" : "刷新");
+    }
+
+    /** v8：按 WebView 实际进度同步按钮（切 tab 后调用一次兜底）。 */
+    private void syncRefreshButton() {
+        if (webView != null) {
+            pageLoading = webView.getProgress() < 100;
+        }
+        updateRefreshButton();
     }
 
     /**
@@ -433,6 +504,7 @@ public class MainActivity extends Activity {
         Tab t = tabs.get(i);
         updateTabsButton();
         webView.loadUrl(t.url != null ? t.url : HOME_URL);
+        syncRefreshButton();
     }
 
     private void closeTab(int i) {
@@ -456,6 +528,7 @@ public class MainActivity extends Activity {
         updateTabsButton();
         Tab nt = tabs.get(curTab);
         webView.loadUrl(nt.url != null ? nt.url : HOME_URL);
+        syncRefreshButton();
     }
 
     private void loadInCurrentTab(String url) {
@@ -1283,6 +1356,8 @@ public class MainActivity extends Activity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
+                pageLoading = true;
+                updateRefreshButton();
                 // 页面加载完成才更新地址栏；正在打字（有焦点）时别打断
                 if (!addressPill.hasFocus()) {
                     addressPill.setText(url != null ? url : "");
@@ -1303,6 +1378,8 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+                pageLoading = false;
+                updateRefreshButton();
                 saveCurrentTab();
                 // 主页：应用壁纸（轮换开则每次取下一张）
                 if (HOME_URL.equals(url)) {
@@ -1329,6 +1406,8 @@ public class MainActivity extends Activity {
                                         WebResourceError error) {
                 super.onReceivedError(view, request, error);
                 if (request.isForMainFrame()) {
+                    pageLoading = false;
+                    updateRefreshButton();
                     setStatus("加载失败：" + error.getDescription());
                 }
             }

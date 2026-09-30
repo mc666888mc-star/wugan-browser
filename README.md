@@ -48,6 +48,14 @@ GPLv3（见 `LICENSE` 文件）。
 
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
+## v8 更新日志（Edge 式双栏工具栏）
+
+- **工具栏改 Edge 式双栏**：顶部地址行 = [引擎 chip][地址 EditText 撑满加宽][刷新/停止二合一按钮]；底部导航行 = [后退][前进][主页][新标签 +][标签页数][⋯菜单]，6 图标均分宽度。顶部不再放后退/前进/tab/菜单，不挤了
+- **刷新/停止二合一**：页面加载中显示 ✕（点一下 `stopLoading()`），加载完成显示刷新图标（点击 `reload()`）；`onPageStarted` / `onPageFinished` / `onReceivedError`（主 frame）切换图标；单 WebView 复用，切 tab 时按实际进度同步一次
+- **主页按钮**：当前 tab 加载主页（壁纸页），图标 Material "home"（Round 白版）
+- **地址栏位置设置保留**：顶部（默认）= 地址行在上、导航行在下；底部 = 地址行移到下方、叠在导航行上面；复用 `applyToolbarPosition()` 的 reparent 思路
+- **地址栏点一下必全选**：`selectAllOnFocus` + 焦点监听里 `post(selectAll)`（等焦点稳定）+ 已有焦点时点击也 `selectAll()`，方便一键删掉重输；弹键盘、回车跳转逻辑不变
+
 ## v6 更新日志（翻译移除 + 地址栏搜索引擎快捷切换）
 
 - **⋯ 菜单：翻译 → 设置**：翻译（走 translate.google.com，国内网络连不上直接超时）删除，`translateCurrent()` 及 `ic_translate.png` 一并移除；B 行第 4 个位置换成"设置"，直达 Edge 化设置页

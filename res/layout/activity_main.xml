@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- v4: 根为竖向 LinearLayout，工具栏位置（顶部/底部）由代码按偏好重排。
-     工具栏图标全部换 Material Round 白色图标，涟漪反馈。 -->
+<!-- v8: Edge 式双栏布局。
+     顶部地址行：[engine chip][地址 EditText 撑满加宽][刷新/停止二合一按钮]。
+     底部导航行：[后退][前进][主页][新标签 +][标签页数][⋯菜单]，6 图标均分。
+     两行位置（地址行顶部/底部）由代码按偏好重排，导航行始终在最下。 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root_container"
     android:layout_width="match_parent"
@@ -8,9 +10,9 @@
     android:background="#121212"
     android:orientation="vertical">
 
-    <!-- 工具栏（默认顶部，可在设置里换到底部；代码里动态重排） -->
+    <!-- 地址行（默认顶部；设置里可换到底部，叠在导航行上面） -->
     <LinearLayout
-        android:id="@+id/toolbar_container"
+        android:id="@+id/address_row"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="#1F1F1F"
@@ -20,28 +22,6 @@
         android:orientation="horizontal"
         android:paddingStart="4dp"
         android:paddingEnd="4dp">
-
-        <ImageView
-            android:id="@+id/back_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:contentDescription="后退"
-            android:focusable="true"
-            android:padding="12dp"
-            android:src="@drawable/ic_arrow_back" />
-
-        <ImageView
-            android:id="@+id/forward_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:contentDescription="前进"
-            android:focusable="true"
-            android:padding="12dp"
-            android:src="@drawable/ic_arrow_forward" />
 
         <!-- v6：搜索引擎快捷切换 chip（点一下弹菜单换引擎） -->
         <TextView
@@ -55,7 +35,7 @@
             android:gravity="center"
             android:paddingStart="10dp"
             android:paddingEnd="10dp"
-            android:text="谷歌"
+            android:text="Bing"
             android:textColor="#4DD0E1"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -75,49 +55,24 @@
             android:inputType="textUri"
             android:paddingStart="14dp"
             android:paddingEnd="14dp"
+            android:selectAllOnFocus="true"
             android:singleLine="true"
             android:textColor="#FFFFFF"
             android:textColorHint="#888888"
             android:textCursorDrawable="@null"
             android:textSize="14sp" />
 
-        <FrameLayout
-            android:id="@+id/tabs_container"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true">
-
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="center"
-                android:contentDescription="标签页"
-                android:src="@drawable/ic_tab" />
-
-            <TextView
-                android:id="@+id/tabs_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="1"
-                android:textColor="#FFFFFF"
-                android:textSize="11sp"
-                android:textStyle="bold" />
-
-        </FrameLayout>
-
+        <!-- v8：刷新/停止二合一按钮（加载中显示 ✕ 停止，加载完显示刷新） -->
         <ImageView
-            android:id="@+id/menu_button"
+            android:id="@+id/refresh_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="菜单"
+            android:contentDescription="刷新"
             android:focusable="true"
             android:padding="12dp"
-            android:src="@drawable/ic_more_vert" />
+            android:src="@drawable/ic_refresh" />
 
     </LinearLayout>
 
@@ -214,6 +169,105 @@
             android:focusable="true"
             android:padding="10dp"
             android:src="@drawable/ic_close" />
+
+    </LinearLayout>
+
+    <!-- v8：底部导航行（6 图标均分，只在底部出现） -->
+    <LinearLayout
+        android:id="@+id/nav_row"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#1F1F1F"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="后退"
+            android:focusable="true"
+            android:padding="14dp"
+            android:src="@drawable/ic_arrow_back" />
+
+        <ImageView
+            android:id="@+id/forward_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="前进"
+            android:focusable="true"
+            android:padding="14dp"
+            android:src="@drawable/ic_arrow_forward" />
+
+        <ImageView
+            android:id="@+id/home_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="主页"
+            android:focusable="true"
+            android:padding="14dp"
+            android:src="@drawable/ic_home" />
+
+        <ImageView
+            android:id="@+id/newtab_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="新标签页"
+            android:focusable="true"
+            android:padding="14dp"
+            android:src="@drawable/ic_add" />
+
+        <FrameLayout
+            android:id="@+id/tabs_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:contentDescription="标签页"
+                android:src="@drawable/ic_tab" />
+
+            <TextView
+                android:id="@+id/tabs_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="1"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+        </FrameLayout>
+
+        <ImageView
+            android:id="@+id/menu_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="菜单"
+            android:focusable="true"
+            android:padding="14dp"
+            android:src="@drawable/ic_more_vert" />
 
     </LinearLayout>
 
