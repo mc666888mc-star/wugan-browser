@@ -354,15 +354,8 @@ public class MainActivity extends Activity {
                 }
             }
         });
-        // v8：已经是焦点状态时（比如从别处点回来），点一下也全选
-        addressPill.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (addressPill.hasFocus()) {
-                    addressPill.selectAll();
-                }
-            }
-        });
+        // v9：只有第一次获得焦点时全选；已有焦点再点则正常放光标，方便局部编辑
+        // （之前"每次点击都全选"太粗暴，已 revert）
         addressPill.setOnEditorActionListener(
                 new TextView.OnEditorActionListener() {
                     @Override
