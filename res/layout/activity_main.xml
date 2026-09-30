@@ -43,6 +43,23 @@
             android:padding="12dp"
             android:src="@drawable/ic_arrow_forward" />
 
+        <!-- v6：搜索引擎快捷切换 chip（点一下弹菜单换引擎） -->
+        <TextView
+            android:id="@+id/engine_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_marginStart="2dp"
+            android:background="@drawable/chip_bg"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="谷歌"
+            android:textColor="#4DD0E1"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
         <!-- v5：地址栏直输 EditText。平时显示网址，点一下全选+弹键盘，回车跳转 -->
         <EditText
             android:id="@+id/address_pill"

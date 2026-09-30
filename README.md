@@ -3,7 +3,7 @@
 基于系统 WebView 的真内核浏览器 + 无障碍自动点选，目标是**让 Cloudflare 验证尽量少弹、弹了也自动点掉**，省去手动等待和点勾的时间。
 
 包名：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖（手工构建链，见 `build.sh`）
-当前版本：v4.0（versionCode 4）
+当前版本：v6.0（versionCode 6）
 
 ## 它做了什么
 
@@ -47,6 +47,12 @@ bash build.sh
 GPLv3（见 `LICENSE` 文件）。
 
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
+
+## v6 更新日志（翻译移除 + 地址栏搜索引擎快捷切换）
+
+- **⋯ 菜单：翻译 → 设置**：翻译（走 translate.google.com，国内网络连不上直接超时）删除，`translateCurrent()` 及 `ic_translate.png` 一并移除；B 行第 4 个位置换成"设置"，直达 Edge 化设置页
+- **地址栏头部搜索引擎快捷切换**：地址栏左侧新增小胶囊 chip（Bing / Yandex / 谷歌 / Duck），点一下弹菜单四选一（当前项打勾），切换后 Toast 提示；与设置页"搜索引擎"分组共用同一 prefs key，onResume 双向实时同步
+- **搜索引擎顺序**：Bing / Yandex / Google / DuckDuckGo（微软 Bing 放最前面），新安装默认 Bing（他网络 Bing 最稳，Google 连不上）；老用户已存的偏好不受影响，点 chip 一下就能切
 
 ## v5 更新日志（地址栏直输 + 默认顶部 + 本地壁纸库 + Edge 化设置页）
 

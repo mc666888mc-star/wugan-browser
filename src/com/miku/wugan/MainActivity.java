@@ -20,7 +20,9 @@ import android.speech.tts.UtteranceProgressListener;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -41,6 +43,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -102,6 +105,7 @@ public class MainActivity extends Activity {
     private ProgressBar progressBar;
     private TextView statusView;
     private EditText addressPill;
+    private TextView engineChip;
     private TextView tabsCount;
     private LinearLayout findBar;
     private EditText findInput;
@@ -204,11 +208,75 @@ public class MainActivity extends Activity {
         }
         // 设置页可能改了广告拦截开关，回来时同步
         adBlocker.setEnabled(prefs.getBoolean(KEY_ADBLOCK, true));
+        // 设置页可能改了搜索引擎，回来时同步 chip
+        refreshEngineChip();
+    }
+
+    // ================= v6：搜索引擎快捷切换 =================
+
+    private static final String[] ENGINE_KEYS =
+            {"bing", "yandex", "google", "duckduckgo"};
+    private static final String[] ENGINE_NAMES =
+            {"Bing", "Yandex", "Google", "DuckDuckGo"};
+    private static final String[] ENGINE_SHORT =
+            {"Bing", "Yandex", "谷歌", "Duck"};
+
+    /** chip 显示当前引擎简称；设置页改了引擎回来时同步。 */
+    private void refreshEngineChip() {
+        if (engineChip == null) {
+            return;
+        }
+        String cur = prefs.getString(KEY_ENGINE, "bing");
+        int idx = 0;
+        for (int i = 0; i < ENGINE_KEYS.length; i++) {
+            if (ENGINE_KEYS[i].equals(cur)) {
+                idx = i;
+                break;
+            }
+        }
+        engineChip.setText(ENGINE_SHORT[idx]);
+    }
+
+    /** 点 chip 弹菜单，四选一，当前项打勾。 */
+    private void showEngineMenu() {
+        String cur = prefs.getString(KEY_ENGINE, "bing");
+        PopupMenu pm = new PopupMenu(
+                new ContextThemeWrapper(this, android.R.style.Theme_Material),
+                engineChip);
+        for (int i = 0; i < ENGINE_KEYS.length; i++) {
+            pm.getMenu().add(0, i, i, ENGINE_NAMES[i])
+                    .setCheckable(true)
+                    .setChecked(ENGINE_KEYS[i].equals(cur));
+        }
+        pm.getMenu().setGroupCheckable(0, true, true);
+        pm.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override public boolean onMenuItemClick(MenuItem item) {
+                int i = item.getItemId();
+                if (i >= 0 && i < ENGINE_KEYS.length) {
+                    prefs.edit().putString(KEY_ENGINE, ENGINE_KEYS[i]).apply();
+                    refreshEngineChip();
+                    Toast.makeText(MainActivity.this,
+                            "已切换为 " + ENGINE_NAMES[i],
+                            Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                return false;
+            }
+        });
+        pm.show();
     }
 
     // ================= 底部工具栏 =================
 
     private void setupBottomBar() {
+        // v6：地址栏左侧搜索引擎快捷切换 chip
+        engineChip = findViewById(R.id.engine_chip);
+        engineChip.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                showEngineMenu();
+            }
+        });
+        refreshEngineChip();
         findViewById(R.id.back_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -299,7 +367,7 @@ public class MainActivity extends Activity {
         if (looksLikeUrl) {
             return hasScheme ? s : "https://" + s;
         }
-        String eng = prefs.getString(KEY_ENGINE, "google");
+        String eng = prefs.getString(KEY_ENGINE, "bing");
         String base;
         if ("bing".equals(eng)) {
             base = "https://www.bing.com/search?q=";
@@ -585,11 +653,12 @@ public class MainActivity extends Activity {
                         showFindBar();
                     }
                 });
-        addMenuItem(rowB, R.drawable.ic_translate, "翻译",
+        addMenuItem(rowB, R.drawable.ic_settings, "设置",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
-                        translateCurrent();
+                        startActivity(new Intent(MainActivity.this,
+                                SettingsActivity.class));
                     }
                 });
         addMenuItem(rowB, R.drawable.ic_volume, "大声朗读",
@@ -771,16 +840,6 @@ public class MainActivity extends Activity {
         Toast.makeText(this,
                 desktopMode ? "已切换桌面版 UA（可能增加验证概率）" : "已切回移动版 UA",
                 Toast.LENGTH_LONG).show();
-    }
-
-    private void translateCurrent() {
-        String url = webView.getUrl();
-        if (url == null || url.equals(HOME_URL)) {
-            Toast.makeText(this, "先打开一个网页再翻译", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        newTab("https://translate.google.com/translate?sl=auto&tl=zh-CN&u="
-                + Uri.encode(url), false);
     }
 
     private void toggleAdblock() {

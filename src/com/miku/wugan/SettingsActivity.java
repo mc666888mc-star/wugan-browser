@@ -29,8 +29,8 @@ public class SettingsActivity extends Activity {
     static final String KEY_ADDR_TOP = "addr_bar_top";
     static final String KEY_ENGINE = "search_engine";
 
-    private static final String[] ENGINES = {"google", "bing", "duckduckgo", "yandex"};
-    private static final String[] ENGINE_NAMES = {"Google", "Bing", "DuckDuckGo", "Yandex"};
+    private static final String[] ENGINES = {"bing", "yandex", "google", "duckduckgo"};
+    private static final String[] ENGINE_NAMES = {"Bing", "Yandex", "Google", "DuckDuckGo"};
     private static final String ADBLOCK_PRIMARY =
             "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts";
     private static final String ADBLOCK_FALLBACK =
@@ -189,7 +189,7 @@ public class SettingsActivity extends Activity {
     private void refreshSettingsValues() {
         boolean top = prefs.getBoolean(KEY_ADDR_TOP, true);
         addrPosValue.setText(top ? "顶部 ›" : "底部 ›");
-        String eng = prefs.getString(KEY_ENGINE, "google");
+        String eng = prefs.getString(KEY_ENGINE, "bing");
         String name = "Google";
         for (int i = 0; i < ENGINES.length; i++) {
             if (ENGINES[i].equals(eng)) {
@@ -227,7 +227,7 @@ public class SettingsActivity extends Activity {
     }
 
     private void showEngineDialog() {
-        String cur = prefs.getString(KEY_ENGINE, "google");
+        String cur = prefs.getString(KEY_ENGINE, "bing");
         int checked = 0;
         for (int i = 0; i < ENGINES.length; i++) {
             if (ENGINES[i].equals(cur)) {
