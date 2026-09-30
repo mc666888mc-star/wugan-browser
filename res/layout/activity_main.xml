@@ -1,39 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- v3: Edge 风格深色布局。WebView 占满，顶部细进度条 + 悬浮状态条，底部深色工具栏。 -->
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- v4: 根为竖向 LinearLayout，工具栏位置（顶部/底部）由代码按偏好重排。
+     工具栏图标全部换 Material Round 白色图标，涟漪反馈。 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212">
+    android:background="#121212"
+    android:orientation="vertical">
 
-    <!-- 底部工具栏 -->
+    <!-- 工具栏（默认底部，可在设置里换到顶部；代码里动态重排） -->
     <LinearLayout
-        android:id="@+id/bottom_bar"
+        android:id="@+id/toolbar_container"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:layout_alignParentBottom="true"
         android:background="#1F1F1F"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="4dp"
         android:paddingEnd="4dp">
 
-        <Button
+        <ImageView
             android:id="@+id/back_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="?android:attr/selectableItemBackground"
-            android:text="←"
-            android:textColor="#FFFFFF"
-            android:textSize="22sp" />
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="后退"
+            android:focusable="true"
+            android:padding="12dp"
+            android:src="@drawable/ic_arrow_back" />
 
-        <Button
+        <ImageView
             android:id="@+id/forward_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="?android:attr/selectableItemBackground"
-            android:text="→"
-            android:textColor="#FFFFFF"
-            android:textSize="22sp" />
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="前进"
+            android:focusable="true"
+            android:padding="12dp"
+            android:src="@drawable/ic_arrow_forward" />
 
         <TextView
             android:id="@+id/address_pill"
@@ -53,79 +59,51 @@
             android:textColor="#E0E0E0"
             android:textSize="14sp" />
 
-        <Button
-            android:id="@+id/tabs_button"
+        <FrameLayout
+            android:id="@+id/tabs_container"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="?android:attr/selectableItemBackground"
-            android:text="1"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp" />
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true">
 
-        <Button
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:contentDescription="标签页"
+                android:src="@drawable/ic_tab" />
+
+            <TextView
+                android:id="@+id/tabs_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="1"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+        </FrameLayout>
+
+        <ImageView
             android:id="@+id/menu_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="?android:attr/selectableItemBackground"
-            android:text="⋯"
-            android:textColor="#FFFFFF"
-            android:textSize="22sp" />
-
-    </LinearLayout>
-
-    <!-- 页内查找浮动条（默认隐藏） -->
-    <LinearLayout
-        android:id="@+id/find_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/bottom_bar"
-        android:background="#1F1F1F"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="6dp"
-        android:visibility="gone">
-
-        <EditText
-            android:id="@+id/find_input"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="在页面上查找"
-            android:imeOptions="actionSearch"
-            android:inputType="text"
-            android:singleLine="true"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#888888"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/find_prev"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="↑"
-            android:textColor="#FFFFFF" />
-
-        <Button
-            android:id="@+id/find_next"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="↓"
-            android:textColor="#FFFFFF" />
-
-        <Button
-            android:id="@+id/find_close"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="✕"
-            android:textColor="#FFFFFF" />
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="菜单"
+            android:focusable="true"
+            android:padding="12dp"
+            android:src="@drawable/ic_more_vert" />
 
     </LinearLayout>
 
     <!-- WebView 区（悬浮进度条 + 状态条） -->
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/find_bar">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <WebView
             android:id="@+id/webview"
@@ -158,4 +136,63 @@
 
     </FrameLayout>
 
-</RelativeLayout>
+    <!-- 页内查找浮动条（默认隐藏） -->
+    <LinearLayout
+        android:id="@+id/find_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1F1F1F"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="6dp"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/find_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="在页面上查找"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:singleLine="true"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:id="@+id/find_prev"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="上一个"
+            android:focusable="true"
+            android:padding="10dp"
+            android:src="@drawable/ic_arrow_up" />
+
+        <ImageView
+            android:id="@+id/find_next"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="下一个"
+            android:focusable="true"
+            android:padding="10dp"
+            android:src="@drawable/ic_arrow_down" />
+
+        <ImageView
+            android:id="@+id/find_close"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="关闭查找"
+            android:focusable="true"
+            android:padding="10dp"
+            android:src="@drawable/ic_close" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,6 +1,8 @@
 package com.miku.wugan;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -22,10 +24,17 @@ public class SettingsActivity extends Activity {
     static final String PREFS = "wugan_prefs";
     static final String KEY_ADBLOCK = "adblock_enabled";
     static final String KEY_INCOGNITO = "incognito_global";
+    static final String KEY_ADDR_TOP = "addr_bar_top";
+    static final String KEY_ENGINE = "search_engine";
+
+    private static final String[] ENGINES = {"google", "bing", "duckduckgo", "yandex"};
+    private static final String[] ENGINE_NAMES = {"Google", "Bing", "DuckDuckGo", "Yandex"};
 
     private SharedPreferences prefs;
     private HistoryDbHelper historyDb;
     private TextView a11yStatus;
+    private TextView addrPosValue;
+    private TextView engineValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +99,86 @@ public class SettingsActivity extends Activity {
         });
 
         TextView about = findViewById(R.id.about_text);
-        about.setText("无感浏览器 v3.0\n"
+        about.setText("无感浏览器 v4.0\n"
                 + "系统 WebView 真内核 · 零 JS 注入 · GPLv3 开源\n"
-                + "自动点选 Cloudflare 验证，省去等待和点勾的时间");
+                + "自动点选 Cloudflare 验证，省去等待和点勾的时间\n"
+                + "图标：Material Icons by Google（Apache License 2.0）");
+
+        addrPosValue = findViewById(R.id.addr_pos_value);
+        engineValue = findViewById(R.id.engine_value);
+        refreshSettingsValues();
+
+        findViewById(R.id.addr_pos_row).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showAddrPosDialog();
+            }
+        });
+        findViewById(R.id.engine_row).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showEngineDialog();
+            }
+        });
+    }
+
+    private void refreshSettingsValues() {
+        boolean top = prefs.getBoolean(KEY_ADDR_TOP, false);
+        addrPosValue.setText(top ? "顶部 ›" : "底部 ›");
+        String eng = prefs.getString(KEY_ENGINE, "google");
+        String name = "Google";
+        for (int i = 0; i < ENGINES.length; i++) {
+            if (ENGINES[i].equals(eng)) {
+                name = ENGINE_NAMES[i];
+                break;
+            }
+        }
+        engineValue.setText(name + " ›");
+    }
+
+    private void showAddrPosDialog() {
+        final boolean top = prefs.getBoolean(KEY_ADDR_TOP, false);
+        new AlertDialog.Builder(this)
+                .setTitle("地址栏位置")
+                .setSingleChoiceItems(new String[]{"底部", "顶部"},
+                        top ? 1 : 0,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface d, int which) {
+                                prefs.edit().putBoolean(KEY_ADDR_TOP,
+                                        which == 1).apply();
+                                refreshSettingsValues();
+                                d.dismiss();
+                                Toast.makeText(SettingsActivity.this,
+                                        "返回浏览器后即时生效",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                .show();
+    }
+
+    private void showEngineDialog() {
+        String cur = prefs.getString(KEY_ENGINE, "google");
+        int checked = 0;
+        for (int i = 0; i < ENGINES.length; i++) {
+            if (ENGINES[i].equals(cur)) {
+                checked = i;
+                break;
+            }
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("默认搜索引擎")
+                .setSingleChoiceItems(ENGINE_NAMES, checked,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface d, int which) {
+                                prefs.edit().putString(KEY_ENGINE,
+                                        ENGINES[which]).apply();
+                                refreshSettingsValues();
+                                d.dismiss();
+                            }
+                        })
+                .show();
     }
 
     @Override

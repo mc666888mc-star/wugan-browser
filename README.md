@@ -3,7 +3,7 @@
 基于系统 WebView 的真内核浏览器 + 无障碍自动点选，目标是**让 Cloudflare 验证尽量少弹、弹了也自动点掉**，省去手动等待和点勾的时间。
 
 包名：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖（手工构建链，见 `build.sh`）
-当前版本：v3.0（versionCode 3）
+当前版本：v4.0（versionCode 4）
 
 ## 它做了什么
 
@@ -45,6 +45,16 @@ bash build.sh
 ## 开源协议
 
 GPLv3（见 `LICENSE` 文件）。
+
+图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
+
+## v4 更新日志（UI 美术打磨 + 地址栏/搜索引擎可设置）
+
+- 图标全面换装：菜单/工具栏 24 个图标统一换成 Google Material Icons（Round 风格白色），替换掉原来参差不齐的系统图标
+- UI 去生硬：底部菜单圆角加大（24dp）+ 深色微透明、地址 pill 加细描边、图标与文字间距规范、所有可点项涟漪反馈、标签页对话框同样打磨
+- 地址栏位置可设置：设置 → 地址栏位置 → 顶部 / 底部（默认底部），返回浏览器即时生效
+- 默认搜索引擎可换：设置 → 默认搜索引擎 → Google / Bing / DuckDuckGo / **Yandex**（默认 Google）；地址栏输入关键词时按所选引擎搜索，像网址（含点且无空格）则直接加载
+- 起始页 `assets/home.html` 美化（幽灵 + 标语 + 使用提示）
 
 ## v3 更新日志（Edge 风格 UI 重构）
 

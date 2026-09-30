@@ -5,16 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>无感浏览器</title>
 <style>
-body{background:#121212;color:#e0e0e0;font-family:sans-serif;display:flex;
+*{box-sizing:border-box}
+body{background:#121212;color:#e8e8e8;font-family:sans-serif;display:flex;
 flex-direction:column;align-items:center;justify-content:center;
-height:100vh;margin:0;text-align:center}
-h1{font-size:30px;margin:0 0 12px}
-p{color:#888;font-size:15px;margin:4px 20px}
+min-height:100vh;margin:0;text-align:center;padding:24px}
+.ghost{font-size:64px;margin-bottom:8px;filter:drop-shadow(0 4px 12px rgba(77,208,225,.25))}
+h1{font-size:28px;margin:0 0 6px;font-weight:600;letter-spacing:2px}
+.sub{color:#4DD0E1;font-size:14px;margin:0 0 26px;letter-spacing:1px}
+.tip{color:#888;font-size:14px;line-height:1.9;margin:0;max-width:300px}
+.tip b{color:#bdbdbd;font-weight:600}
 </style>
 </head>
 <body>
-<h1>👻 无感浏览器</h1>
-<p>点底部地址栏，输入网址开始浏览</p>
-<p>右下角 ⋯ 菜单里有收藏夹、历史、无痕标签页等全部功能</p>
+<div class="ghost">👻</div>
+<h1>无感浏览器</h1>
+<p class="sub">让验证自己消失</p>
+<p class="tip">点<b>地址栏</b>，输入网址直达、输入关键词搜索<br>
+右下角 <b>⋯</b> 菜单里有收藏夹、历史、无痕标签页等全部功能<br>
+地址栏想放上面？去 <b>设置 → 地址栏位置</b> 换</p>
 </body>
 </html>

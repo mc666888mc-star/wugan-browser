@@ -18,6 +18,7 @@ import android.os.Environment;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -47,6 +48,7 @@ import android.widget.Toast;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -66,6 +68,8 @@ public class MainActivity extends Activity {
     static final String PREFS = "wugan_prefs";
     static final String KEY_ADBLOCK = "adblock_enabled";
     static final String KEY_INCOGNITO = "incognito_global";
+    static final String KEY_ADDR_TOP = "addr_bar_top";
+    static final String KEY_ENGINE = "search_engine";
     private static final String ADBLOCK_PRIMARY =
             "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts";
     private static final String ADBLOCK_FALLBACK =
@@ -97,9 +101,10 @@ public class MainActivity extends Activity {
     private ProgressBar progressBar;
     private TextView statusView;
     private TextView addressPill;
-    private Button tabsButton;
+    private TextView tabsCount;
     private LinearLayout findBar;
     private EditText findInput;
+    private boolean addrBarTop = false;
 
     private HistoryDbHelper historyDb;
     private BookmarkDbHelper bookmarkDb;
@@ -124,6 +129,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        addrBarTop = prefs.getBoolean(KEY_ADDR_TOP, false);
+        applyToolbarPosition();
         historyDb = new HistoryDbHelper(this);
         bookmarkDb = new BookmarkDbHelper(this);
         adBlocker = new AdBlocker();
@@ -133,7 +140,7 @@ public class MainActivity extends Activity {
         progressBar = findViewById(R.id.progress_bar);
         statusView = findViewById(R.id.status_view);
         addressPill = findViewById(R.id.address_pill);
-        tabsButton = findViewById(R.id.tabs_button);
+        tabsCount = findViewById(R.id.tabs_count);
         findBar = findViewById(R.id.find_bar);
         findInput = findViewById(R.id.find_input);
         webView = findViewById(R.id.webview);
@@ -166,9 +173,23 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** 按偏好把工具栏放到顶部或底部 */
+    private void applyToolbarPosition() {
+        LinearLayout root = findViewById(R.id.root_container);
+        LinearLayout toolbar = findViewById(R.id.toolbar_container);
+        root.removeView(toolbar);
+        root.addView(toolbar, addrBarTop ? 0 : root.getChildCount());
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        // 设置页改了地址栏位置：重建 Activity 即时生效
+        boolean top = prefs.getBoolean(KEY_ADDR_TOP, false);
+        if (top != addrBarTop) {
+            recreate();
+            return;
+        }
         if (webView != null) {
             webView.onResume();
         }
@@ -201,7 +222,7 @@ public class MainActivity extends Activity {
                 showAddressDialog();
             }
         });
-        tabsButton.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.tabs_container).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showTabsDialog();
@@ -216,7 +237,7 @@ public class MainActivity extends Activity {
     }
 
     private void updateTabsButton() {
-        tabsButton.setText(String.valueOf(tabs.size()));
+        tabsCount.setText(String.valueOf(tabs.size()));
     }
 
     /** 地址 pill 点击：弹输入框改址 */
@@ -229,14 +250,14 @@ public class MainActivity extends Activity {
             input.setText(cur);
             input.selectAll();
         }
-        input.setHint("输入网址");
+        input.setHint("输入网址或搜索关键词");
         new AlertDialog.Builder(this)
-                .setTitle("前往网址")
+                .setTitle("前往")
                 .setView(input)
                 .setPositiveButton("进入", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface d, int which) {
-                        String url = normalizeUrl(input.getText().toString());
+                        String url = resolveInput(input.getText().toString());
                         if (url != null) {
                             hideKeyboard(input);
                             loadInCurrentTab(url);
@@ -247,7 +268,11 @@ public class MainActivity extends Activity {
                 .show();
     }
 
-    private static String normalizeUrl(String input) {
+    /**
+     * v4：像网址（含点且无空格，或带 scheme）→ 直接加载；
+     * 否则按设置里的默认搜索引擎搜索。
+     */
+    private String resolveInput(String input) {
         if (input == null) {
             return null;
         }
@@ -255,10 +280,27 @@ public class MainActivity extends Activity {
         if (TextUtils.isEmpty(s)) {
             return null;
         }
-        if (!s.matches("^[a-zA-Z][a-zA-Z0-9+.-]*://.*")) {
-            s = "https://" + s;
+        boolean hasScheme = s.matches("^[a-zA-Z][a-zA-Z0-9+.-]*://.*");
+        boolean looksLikeUrl = hasScheme || (s.contains(".") && !s.contains(" "));
+        if (looksLikeUrl) {
+            return hasScheme ? s : "https://" + s;
         }
-        return s;
+        String eng = prefs.getString(KEY_ENGINE, "google");
+        String base;
+        if ("bing".equals(eng)) {
+            base = "https://www.bing.com/search?q=";
+        } else if ("duckduckgo".equals(eng)) {
+            base = "https://duckduckgo.com/?q=";
+        } else if ("yandex".equals(eng)) {
+            base = "https://yandex.com/search/?text=";
+        } else {
+            base = "https://www.google.com/search?q=";
+        }
+        try {
+            return base + URLEncoder.encode(s, "UTF-8");
+        } catch (Exception e) {
+            return base + s;
+        }
     }
 
     private void hideKeyboard(View v) {
@@ -354,7 +396,8 @@ public class MainActivity extends Activity {
             LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.HORIZONTAL);
             row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-            row.setPadding(0, dp(8), 0, dp(8));
+            row.setPadding(dp(4), dp(8), dp(4), dp(8));
+            row.setBackgroundResource(rippleRes());
 
             TextView tv = new TextView(this);
             String label = (t.incognito ? "[无痕] " : "")
@@ -371,11 +414,12 @@ public class MainActivity extends Activity {
             tv.setEllipsize(TextUtils.TruncateAt.END);
             row.addView(tv);
 
-            Button close = new Button(this);
-            close.setText("✕");
-            close.setTextColor(Color.parseColor("#AAAAAA"));
-            close.setBackgroundResource(android.R.drawable.btn_default);
-            close.getBackground().setAlpha(60);
+            ImageView close = new ImageView(this);
+            LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(dp(40), dp(40));
+            close.setLayoutParams(clp);
+            close.setImageResource(R.drawable.ic_close);
+            close.setPadding(dp(10), dp(10), dp(10), dp(10));
+            close.setBackgroundResource(rippleRes());
             close.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -413,6 +457,12 @@ public class MainActivity extends Activity {
         Button add = new Button(this);
         add.setText("＋ 新标签页");
         add.setTextColor(Color.parseColor("#FFFFFF"));
+        add.setBackgroundResource(rippleRes());
+        LinearLayout.LayoutParams alp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        alp.setMargins(0, dp(8), 0, 0);
+        add.setLayoutParams(alp);
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -450,7 +500,7 @@ public class MainActivity extends Activity {
 
         // A 行
         LinearLayout rowA = newRow();
-        addMenuItem(rowA, android.R.drawable.btn_star_big_on, "收藏夹",
+        addMenuItem(rowA, R.drawable.ic_star, "收藏夹",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -458,7 +508,7 @@ public class MainActivity extends Activity {
                                 BookmarksActivity.class));
                     }
                 });
-        addMenuItem(rowA, android.R.drawable.ic_menu_recent_history, "历史记录",
+        addMenuItem(rowA, R.drawable.ic_history, "历史记录",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -466,14 +516,14 @@ public class MainActivity extends Activity {
                                 HistoryActivity.class));
                     }
                 });
-        addMenuItem(rowA, android.R.drawable.ic_menu_share, "共享",
+        addMenuItem(rowA, R.drawable.ic_share, "共享",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         shareCurrent();
                     }
                 });
-        addMenuItem(rowA, android.R.drawable.stat_sys_download, "下载",
+        addMenuItem(rowA, R.drawable.ic_download, "下载",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -486,7 +536,7 @@ public class MainActivity extends Activity {
                         }
                     }
                 });
-        addMenuItem(rowA, android.R.drawable.ic_menu_preferences, "设置",
+        addMenuItem(rowA, R.drawable.ic_settings, "设置",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -499,14 +549,14 @@ public class MainActivity extends Activity {
 
         // B 行
         LinearLayout rowB = newRow();
-        addMenuItem(rowB, android.R.drawable.btn_star_big_off, "添加到收藏夹",
+        addMenuItem(rowB, R.drawable.ic_bookmark_add, "添加到收藏夹",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         addBookmark();
                     }
                 });
-        addMenuItem(rowB, android.R.drawable.ic_menu_view,
+        addMenuItem(rowB, R.drawable.ic_desktop,
                 desktopMode ? "桌面版·开" : "桌面版网站",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
@@ -514,21 +564,21 @@ public class MainActivity extends Activity {
                         toggleDesktopUa();
                     }
                 });
-        addMenuItem(rowB, android.R.drawable.ic_menu_search, "页内查找",
+        addMenuItem(rowB, R.drawable.ic_find, "页内查找",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         showFindBar();
                     }
                 });
-        addMenuItem(rowB, android.R.drawable.ic_menu_directions, "翻译",
+        addMenuItem(rowB, R.drawable.ic_translate, "翻译",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         translateCurrent();
                     }
                 });
-        addMenuItem(rowB, android.R.drawable.ic_btn_speak_now, "大声朗读",
+        addMenuItem(rowB, R.drawable.ic_volume, "大声朗读",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -540,21 +590,21 @@ public class MainActivity extends Activity {
 
         // C 行
         LinearLayout rowC = newRow();
-        addMenuItem(rowC, android.R.drawable.ic_menu_add, "新标签页",
+        addMenuItem(rowC, R.drawable.ic_add, "新标签页",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         newTab(HOME_URL, false);
                     }
                 });
-        addMenuItem(rowC, android.R.drawable.ic_lock_lock, "无痕新标签页",
+        addMenuItem(rowC, R.drawable.ic_incognito, "无痕新标签页",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         newTab(HOME_URL, true);
                     }
                 });
-        addMenuItem(rowC, android.R.drawable.ic_menu_close_clear_cancel,
+        addMenuItem(rowC, R.drawable.ic_block,
                 adblockOn ? "广告拦截·开" : "广告拦截·关",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
@@ -562,7 +612,7 @@ public class MainActivity extends Activity {
                         toggleAdblock();
                     }
                 });
-        addMenuItem(rowC, android.R.drawable.ic_menu_revert, "更新规则",
+        addMenuItem(rowC, R.drawable.ic_refresh, "更新规则",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -572,21 +622,21 @@ public class MainActivity extends Activity {
         root.addView(rowC);
 
         LinearLayout rowD = newRow();
-        addMenuItem(rowD, android.R.drawable.ic_menu_save, "下载此页面",
+        addMenuItem(rowD, R.drawable.ic_file_download, "下载此页面",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         savePageArchive();
                     }
                 });
-        addMenuItem(rowD, android.R.drawable.ic_menu_set_as, "添加至手机",
+        addMenuItem(rowD, R.drawable.ic_home_screen, "添加至手机",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         pinToHome();
                     }
                 });
-        addMenuItem(rowD, android.R.drawable.ic_lock_power_off, "退出浏览器",
+        addMenuItem(rowD, R.drawable.ic_logout, "退出浏览器",
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -630,33 +680,40 @@ public class MainActivity extends Activity {
         return v;
     }
 
-    /** 菜单格子：图标 + 文字，纵向排列 */
+    /** 系统涟漪背景资源 id（?attr/selectableItemBackground），代码里动态取 */
+    private int rippleRes() {
+        TypedValue tv = new TypedValue();
+        getTheme().resolveAttribute(
+                android.R.attr.selectableItemBackground, tv, true);
+        return tv.resourceId;
+    }
+
+    /** 菜单格子：图标 + 文字，纵向排列，涟漪反馈 */
     private void addMenuItem(LinearLayout row, int iconRes, String label,
                              View.OnClickListener l) {
         LinearLayout item = new LinearLayout(this);
         item.setOrientation(LinearLayout.VERTICAL);
         item.setGravity(Gravity.CENTER_HORIZONTAL);
-        item.setPadding(0, dp(10), 0, dp(10));
+        item.setPadding(0, dp(12), 0, dp(12));
         item.setLayoutParams(new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
         item.setClickable(true);
         item.setFocusable(true);
-        item.setBackgroundResource(
-                android.R.drawable.list_selector_background);
+        item.setBackgroundResource(rippleRes());
         item.setOnClickListener(l);
 
         ImageView iv = new ImageView(this);
         iv.setImageResource(iconRes);
-        LinearLayout.LayoutParams ilp = new LinearLayout.LayoutParams(dp(28), dp(28));
+        LinearLayout.LayoutParams ilp = new LinearLayout.LayoutParams(dp(30), dp(30));
         iv.setLayoutParams(ilp);
         item.addView(iv);
 
         TextView tv = new TextView(this);
         tv.setText(label);
-        tv.setTextColor(Color.parseColor("#E0E0E0"));
-        tv.setTextSize(11);
+        tv.setTextColor(Color.parseColor("#E8E8E8"));
+        tv.setTextSize(12);
         tv.setGravity(Gravity.CENTER);
-        tv.setPadding(0, dp(6), 0, 0);
+        tv.setPadding(0, dp(8), 0, 0);
         item.addView(tv);
 
         row.addView(item);
