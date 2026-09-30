@@ -16,7 +16,7 @@
     <string name="find_hint">Find in page</string>
     <string name="find_prev">Previous</string>
     <string name="find_next">Next</string>
-    <string name="find_close">Close find</string>
+    <string name="find_close">Close</string>
     <string name="history">History</string>
     <string name="history_title">Browsing history</string>
     <string name="clear_history">Clear history</string>
@@ -71,7 +71,7 @@
     <string name="cancel">Cancel</string>
     <string name="delete_bookmark_confirm">Delete this bookmark?\n%1$s</string>
     <string name="err_bad_url">Invalid image URL</string>
-    <string name="err_data_url">Embedded data: images aren\'t supported</string>
+    <string name="err_data_url">Data URLs aren\'t supported</string>
     <string name="err_scheme">Only http/https images are supported</string>
     <string name="err_http">Download failed (HTTP %1$d)</string>
     <string name="err_not_image">Not an image file</string>
