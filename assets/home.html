@@ -5,54 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>无感浏览器</title>
 <style>
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;color:#fff;font-family:sans-serif;
-  /* 深色渐变兜底：壁纸库为空或加载失败时显示 */
-  background:linear-gradient(160deg,#0d1b2a 0%,#101828 45%,#0a0f1a 100%);
-  background-size:cover;background-position:center;background-repeat:no-repeat;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;padding:24px;min-height:100vh;
-}
-.card{
-  background:rgba(12,16,26,.55);
-  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-  border:1px solid rgba(255,255,255,.12);border-radius:20px;
-  padding:28px 32px;max-width:340px;width:100%;
-  box-shadow:0 8px 32px rgba(0,0,0,.35);
-}
-h1{font-size:30px;margin:0 0 8px;font-weight:600;letter-spacing:3px}
-.sub{color:#7fd4e6;font-size:14px;margin:0 0 20px;letter-spacing:1px}
-.tip{color:#cfd6e4;font-size:13.5px;line-height:1.9;margin:0 0 20px}
-.tip b{color:#fff}
-.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-.chip{
-  color:#e8eefc;text-decoration:none;font-size:13px;
-  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);
-  padding:7px 14px;border-radius:999px;
-}
-.chip:active{background:rgba(255,255,255,.22)}
-.hint{margin-top:18px;color:rgba(255,255,255,.55);font-size:12px}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#121212}
+body{background-size:cover;background-position:center;background-repeat:no-repeat}
 </style>
 </head>
 <body>
-<div class="card">
-  <h1>无感浏览器</h1>
-  <p class="sub">让验证自己消失</p>
-  <p class="tip">点<b>地址栏</b>直接输入：网址直达、关键词搜索<br>长按网页图片可<b>设为壁纸</b></p>
-  <div class="chips">
-    <a class="chip" href="https://wallhaven.cc">Wallhaven</a>
-    <a class="chip" href="https://unsplash.com">Unsplash</a>
-    <a class="chip" href="https://www.pexels.com">Pexels</a>
-    <a class="chip" href="https://www.bing.com">Bing Wallpaper</a>
-  </div>
-</div>
-<p class="hint">⋯ 菜单 → 更换壁纸，可用相册图片</p>
 <script>
-/* 原生层调用：传入 file:// 本地壁纸路径 */
 function setWallpaper(url){
-  if(url){ document.body.style.backgroundImage = "url('"+url+"')"; }
+  if(url){document.body.style.backgroundImage="url('"+url+"')";}
 }
 </script>
 </body>
