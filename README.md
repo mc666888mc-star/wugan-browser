@@ -42,6 +42,10 @@ bash build.sh
 签名 keystore 在项目根 `debug.keystore`（常驻，不进 `out/`，保证覆盖安装不报签名冲突）。
 广告规则源文件在 `assets/adblock_hosts.txt`（构建时打进 APK，首次运行拷贝到应用私有目录后使用）。
 
+## 开源协议
+
+GPLv3（见 `LICENSE` 文件）。
+
 ## v2 更新日志
 
 - 自动点选关键词大扩展：覆盖内嵌式 Turnstile（"请验证您是真人"/"turnstile"/"我不是机器人"等），复选框判定放宽（文本命中或"验证页+CheckBox 类名"）
