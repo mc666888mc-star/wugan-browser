@@ -1386,11 +1386,12 @@ public class MainActivity extends Activity {
                 if (showingSniff) {
                     return; // 嗅探提示优先，不被覆盖
                 }
-                if (isChallengeUrl(url) || isChallengeTitle(view.getTitle())) {
+                if (isChallengeUrl(url)) {
                     setStatus("Cloudflare 验证中，稍候…");
                 } else {
                     setStatus("");
                 }
+                // v8.3：删掉标题判断——标题经常是上一页的旧标题，会在 GitHub 等正常页面上误弹
             }
 
             @Override
@@ -1542,16 +1543,7 @@ public class MainActivity extends Activity {
                 || url.contains("/cdn-cgi/challenge");
     }
 
-    private static boolean isChallengeTitle(String title) {
-        if (title == null) {
-            return false;
-        }
-        String t = title.toLowerCase();
-        return t.contains("just a moment")
-                || t.contains("verifying you are human")
-                || t.contains("请稍候")
-                || t.contains("验证");
-    }
+    // v8.3：只用网址判断（challenges.cloudflare.com / /cdn-cgi/challenge），标题判断已删（误报太多）
 
     @Override
     public void onBackPressed() {
