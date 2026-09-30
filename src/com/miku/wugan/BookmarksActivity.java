@@ -104,7 +104,7 @@ public class BookmarksActivity extends Activity {
                 long t = c.getLong(timeI);
                 Map<String, String> m = new HashMap<String, String>();
                 m.put("line1", fmt.format(new Date(t)) + "  " + title);
-                m.put("line2", url);
+                m.put("line2", UrlFmt.display(url));
                 data.add(m);
                 urls.add(url);
             }
