@@ -88,7 +88,7 @@ public class SettingsActivity extends Activity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 WallpaperManager.setRotate(SettingsActivity.this, isChecked);
                 Toast.makeText(SettingsActivity.this,
-                        isChecked ? "轮换壁纸开" : "轮换壁纸关",
+                        isChecked ? getString(R.string.rotate_on) : getString(R.string.rotate_off),
                         Toast.LENGTH_SHORT).show();
             }
         });
@@ -108,7 +108,7 @@ public class SettingsActivity extends Activity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 prefs.edit().putBoolean(KEY_ADBLOCK, isChecked).apply();
                 Toast.makeText(SettingsActivity.this,
-                        isChecked ? "广告拦截开" : "广告拦截关",
+                        isChecked ? getString(R.string.adblock_on_toast) : getString(R.string.adblock_off_toast),
                         Toast.LENGTH_SHORT).show();
             }
         });
@@ -137,10 +137,10 @@ public class SettingsActivity extends Activity {
                     cm.flush();
                     historyDb.clear();
                     Toast.makeText(SettingsActivity.this,
-                            "已退出无痕并清除数据", Toast.LENGTH_SHORT).show();
+                            getString(R.string.incognito_exited), Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(SettingsActivity.this,
-                            "无痕模式开：不记录历史", Toast.LENGTH_SHORT).show();
+                            getString(R.string.incognito_on_toast), Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -163,17 +163,14 @@ public class SettingsActivity extends Activity {
                             Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS));
                 } catch (Exception e) {
                     Toast.makeText(SettingsActivity.this,
-                            "打不开系统设置", Toast.LENGTH_SHORT).show();
+                            getString(R.string.cant_open_settings), Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
         // ---- 关于 ----
         TextView about = findViewById(R.id.about_text);
-        about.setText("无感浏览器 v5.0\n"
-                + "系统 WebView 真内核 · 零 JS 注入 · GPLv3 开源\n"
-                + "自动点选 Cloudflare 验证，省去等待和点勾的时间\n"
-                + "图标：Material Icons by Google（Apache License 2.0）");
+        about.setText(getString(R.string.about_text, appVersion()));
 
         refreshSettingsValues();
     }
@@ -182,13 +179,13 @@ public class SettingsActivity extends Activity {
     protected void onResume() {
         super.onResume();
         boolean on = isA11yServiceOn();
-        a11yStatus.setText(on ? "状态：已开启 ✓" : "状态：未开启（自动点选不工作）");
+        a11yStatus.setText(on ? getString(R.string.a11y_on) : getString(R.string.a11y_off));
         refreshSettingsValues();
     }
 
     private void refreshSettingsValues() {
         boolean top = prefs.getBoolean(KEY_ADDR_TOP, true);
-        addrPosValue.setText(top ? "顶部 ›" : "底部 ›");
+        addrPosValue.setText(top ? getString(R.string.addr_top) : getString(R.string.addr_bottom));
         String eng = prefs.getString(KEY_ENGINE, "bing");
         String name = "Google";
         for (int i = 0; i < ENGINES.length; i++) {
@@ -199,17 +196,26 @@ public class SettingsActivity extends Activity {
         }
         engineValue.setText(name + " ›");
         int n = WallpaperManager.list(this).length;
-        wallpaperCountValue.setText(n + " 张 ›");
+        wallpaperCountValue.setText(getString(R.string.wallpaper_count, n));
         if (rotateSwitch != null) {
             rotateSwitch.setChecked(WallpaperManager.isRotate(this));
+        }
+    }
+
+    /** 关于页显示的版本号：读 manifest，免得每次发版忘改文案。 */
+    private String appVersion() {
+        try {
+            return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (Exception e) {
+            return "";
         }
     }
 
     private void showAddrPosDialog() {
         final boolean top = prefs.getBoolean(KEY_ADDR_TOP, true);
         new AlertDialog.Builder(this)
-                .setTitle("地址栏位置")
-                .setSingleChoiceItems(new String[]{"底部", "顶部"},
+                .setTitle(R.string.addr_pos_title)
+                .setSingleChoiceItems(new String[]{getString(R.string.addr_bottom_opt), getString(R.string.addr_top_opt)},
                         top ? 1 : 0,
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -219,7 +225,7 @@ public class SettingsActivity extends Activity {
                                 refreshSettingsValues();
                                 d.dismiss();
                                 Toast.makeText(SettingsActivity.this,
-                                        "返回浏览器后即时生效",
+                                        getString(R.string.take_effect_hint),
                                         Toast.LENGTH_SHORT).show();
                             }
                         })
@@ -236,7 +242,7 @@ public class SettingsActivity extends Activity {
             }
         }
         new AlertDialog.Builder(this)
-                .setTitle("默认搜索引擎")
+                .setTitle(R.string.default_engine)
                 .setSingleChoiceItems(ENGINE_NAMES, checked,
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -256,9 +262,9 @@ public class SettingsActivity extends Activity {
             Intent i = new Intent(Intent.ACTION_GET_CONTENT);
             i.setType("image/*");
             startActivityForResult(
-                    Intent.createChooser(i, "选择壁纸"), REQUEST_WALLPAPER);
+                    Intent.createChooser(i, getString(R.string.pick_wallpaper)), REQUEST_WALLPAPER);
         } catch (Exception e) {
-            Toast.makeText(this, "打不开相册", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.gallery_unavailable), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -278,7 +284,7 @@ public class SettingsActivity extends Activity {
                         @Override
                         public void run() {
                             Toast.makeText(SettingsActivity.this,
-                                    f != null ? "壁纸已更换" : "图片读取失败",
+                                    f != null ? getString(R.string.wallpaper_changed) : getString(R.string.image_read_failed),
                                     Toast.LENGTH_SHORT).show();
                             refreshSettingsValues();
                         }
@@ -290,7 +296,7 @@ public class SettingsActivity extends Activity {
 
     /** 更新广告规则：写共享规则文件，返回浏览器后生效 */
     private void updateRules() {
-        Toast.makeText(this, "正在更新广告规则…", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.updating_rules), Toast.LENGTH_SHORT).show();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -302,11 +308,11 @@ public class SettingsActivity extends Activity {
                     public void run() {
                         if (n >= 0) {
                             Toast.makeText(SettingsActivity.this,
-                                    "广告规则已更新：" + n + " 条",
+                                    getString(R.string.rules_updated, n),
                                     Toast.LENGTH_LONG).show();
                         } else {
                             Toast.makeText(SettingsActivity.this,
-                                    "更新失败，请检查网络后重试",
+                                    getString(R.string.update_failed),
                                     Toast.LENGTH_LONG).show();
                         }
                     }
@@ -320,7 +326,7 @@ public class SettingsActivity extends Activity {
         cm.removeAllCookies(null);
         cm.flush();
         historyDb.clear();
-        Toast.makeText(this, "已清除 Cookie 与浏览历史",
+        Toast.makeText(this, getString(R.string.cleared_data),
                 Toast.LENGTH_SHORT).show();
     }
 

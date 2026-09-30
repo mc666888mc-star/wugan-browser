@@ -60,17 +60,17 @@ public class BookmarksActivity extends Activity {
                                             final int position, long id) {
                 final String url = urls.get(position);
                 new AlertDialog.Builder(BookmarksActivity.this)
-                        .setMessage("删除这条收藏？\n" + url)
-                        .setPositiveButton("删除", new DialogInterface.OnClickListener() {
+                        .setMessage(getString(R.string.delete_bookmark_confirm, url))
+                        .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface d, int which) {
                                 db.delete(url);
                                 refresh();
                                 Toast.makeText(BookmarksActivity.this,
-                                        "已删除", Toast.LENGTH_SHORT).show();
+                                        getString(R.string.deleted), Toast.LENGTH_SHORT).show();
                             }
                         })
-                        .setNegativeButton("取消", null)
+                        .setNegativeButton(R.string.cancel, null)
                         .show();
                 return true;
             }

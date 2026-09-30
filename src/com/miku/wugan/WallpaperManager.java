@@ -170,14 +170,14 @@ public class WallpaperManager {
      */
     public static String downloadFromUrl(Context c, String url) {
         if (url == null) {
-            return "图片地址无效";
+            return c.getString(R.string.err_bad_url);
         }
         String u = url.toLowerCase();
         if (u.startsWith("data:")) {
-            return "不支持 data: 内嵌图片";
+            return c.getString(R.string.err_data_url);
         }
         if (!u.startsWith("http://") && !u.startsWith("https://")) {
-            return "只支持 http/https 图片";
+            return c.getString(R.string.err_scheme);
         }
         HttpURLConnection conn = null;
         InputStream in = null;
@@ -193,11 +193,11 @@ public class WallpaperManager {
                             + "Chrome/120.0.0.0 Safari/537.36");
             int code = conn.getResponseCode();
             if (code != HttpURLConnection.HTTP_OK) {
-                return "下载失败（HTTP " + code + "）";
+                return c.getString(R.string.err_http, code);
             }
             String ct = conn.getContentType();
             if (ct == null || !ct.toLowerCase().startsWith("image/")) {
-                return "不是图片文件";
+                return c.getString(R.string.err_not_image);
             }
             String lc = ct.toLowerCase();
             String ext = ".jpg";
@@ -214,7 +214,7 @@ public class WallpaperManager {
             copy(in, out);
             if (dst.length() < 1024) {
                 dst.delete();
-                return "图片太小，可能下载失败";
+                return c.getString(R.string.err_too_small);
             }
             setCurrent(c, dst);
             return null;
@@ -222,7 +222,7 @@ public class WallpaperManager {
             if (dst != null) {
                 dst.delete();
             }
-            return "下载失败：" + e.getMessage();
+            return c.getString(R.string.err_download, e.getMessage());
         } finally {
             closeQuietly(in);
             closeQuietly(out);

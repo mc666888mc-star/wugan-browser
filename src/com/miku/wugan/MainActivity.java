@@ -230,8 +230,16 @@ public class MainActivity extends Activity {
             {"bing", "yandex", "google", "duckduckgo"};
     private static final String[] ENGINE_NAMES =
             {"Bing", "Yandex", "Google", "DuckDuckGo"};
-    private static final String[] ENGINE_SHORT =
-            {"Bing", "Yandex", "谷歌", "Duck"};
+    /** chip 上的引擎简称：只有谷歌在中英文下写法不同，其余用品牌名。 */
+    private String engineShortName(int idx) {
+        if ("google".equals(ENGINE_KEYS[idx])) {
+            return getString(R.string.engine_google_short);
+        }
+        if ("duckduckgo".equals(ENGINE_KEYS[idx])) {
+            return "Duck";
+        }
+        return ENGINE_NAMES[idx];
+    }
 
     /** chip 显示当前引擎简称；设置页改了引擎回来时同步。 */
     private void refreshEngineChip() {
@@ -246,7 +254,7 @@ public class MainActivity extends Activity {
                 break;
             }
         }
-        engineChip.setText(ENGINE_SHORT[idx]);
+        engineChip.setText(engineShortName(idx));
     }
 
     /** 点 chip 弹菜单，四选一，当前项打勾。 */
@@ -268,7 +276,7 @@ public class MainActivity extends Activity {
                     prefs.edit().putString(KEY_ENGINE, ENGINE_KEYS[i]).apply();
                     refreshEngineChip();
                     Toast.makeText(MainActivity.this,
-                            "已切换为 " + ENGINE_NAMES[i],
+                            getString(R.string.switched_to, ENGINE_NAMES[i]),
                             Toast.LENGTH_SHORT).show();
                     return true;
                 }
@@ -403,7 +411,7 @@ public class MainActivity extends Activity {
         }
         refreshButton.setImageResource(
                 pageLoading ? R.drawable.ic_close : R.drawable.ic_refresh);
-        refreshButton.setContentDescription(pageLoading ? "停止加载" : "刷新");
+        refreshButton.setContentDescription(pageLoading ? getString(R.string.stop_loading) : getString(R.string.refresh));
     }
 
     /** v8：按 WebView 实际进度同步按钮（切 tab 后调用一次兜底）。 */
@@ -475,7 +483,7 @@ public class MainActivity extends Activity {
 
     private void newTab(String url, boolean incognito) {
         if (tabs.size() >= TAB_MAX) {
-            Toast.makeText(this, "标签页已达上限(" + TAB_MAX + ")", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.tab_limit_reached, TAB_MAX), Toast.LENGTH_SHORT).show();
             return;
         }
         saveCurrentTab();
@@ -484,7 +492,7 @@ public class MainActivity extends Activity {
         updateTabsButton();
         webView.loadUrl(url);
         if (incognito) {
-            Toast.makeText(this, "无痕标签页：关闭时清除痕迹", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.incognito_tab_hint), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -548,7 +556,7 @@ public class MainActivity extends Activity {
             row.setBackgroundResource(rippleRes());
 
             TextView tv = new TextView(this);
-            String label = (t.incognito ? "[无痕] " : "")
+            String label = (t.incognito ? getString(R.string.tab_incognito_prefix) + " " : "")
                     + (t.title != null ? t.title : t.url)
                     + "\n" + (t.url != null ? t.url : "");
             tv.setText(label);
@@ -603,7 +611,7 @@ public class MainActivity extends Activity {
         }
 
         Button add = new Button(this);
-        add.setText("＋ 新标签页");
+        add.setText(R.string.new_tab_plus);
         add.setTextColor(Color.parseColor("#FFFFFF"));
         add.setBackgroundResource(rippleRes());
         LinearLayout.LayoutParams alp = new LinearLayout.LayoutParams(
@@ -648,7 +656,7 @@ public class MainActivity extends Activity {
 
         // A 行
         LinearLayout rowA = newRow();
-        addMenuItem(rowA, R.drawable.ic_star, "收藏夹",
+        addMenuItem(rowA, R.drawable.ic_star, getString(R.string.menu_bookmarks),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -656,7 +664,7 @@ public class MainActivity extends Activity {
                                 BookmarksActivity.class));
                     }
                 });
-        addMenuItem(rowA, R.drawable.ic_history, "历史记录",
+        addMenuItem(rowA, R.drawable.ic_history, getString(R.string.menu_history),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -664,14 +672,14 @@ public class MainActivity extends Activity {
                                 HistoryActivity.class));
                     }
                 });
-        addMenuItem(rowA, R.drawable.ic_share, "共享",
+        addMenuItem(rowA, R.drawable.ic_share, getString(R.string.menu_share),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         shareCurrent();
                     }
                 });
-        addMenuItem(rowA, R.drawable.ic_download, "下载",
+        addMenuItem(rowA, R.drawable.ic_download, getString(R.string.menu_downloads),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -679,12 +687,12 @@ public class MainActivity extends Activity {
                             startActivity(new Intent(
                                     DownloadManager.ACTION_VIEW_DOWNLOADS));
                         } catch (Exception e) {
-                            Toast.makeText(MainActivity.this, "打不开系统下载管理",
+                            Toast.makeText(MainActivity.this, getString(R.string.cant_open_downloads),
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
-        addMenuItem(rowA, R.drawable.ic_settings, "设置",
+        addMenuItem(rowA, R.drawable.ic_settings, getString(R.string.menu_settings),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -697,7 +705,7 @@ public class MainActivity extends Activity {
 
         // B 行
         LinearLayout rowB = newRow();
-        addMenuItem(rowB, R.drawable.ic_bookmark_add, "添加到收藏夹",
+        addMenuItem(rowB, R.drawable.ic_bookmark_add, getString(R.string.menu_add_bookmark),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -705,21 +713,21 @@ public class MainActivity extends Activity {
                     }
                 });
         addMenuItem(rowB, R.drawable.ic_desktop,
-                desktopMode ? "桌面版·开" : "桌面版网站",
+                desktopMode ? getString(R.string.menu_desktop_on) : getString(R.string.menu_desktop),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         toggleDesktopUa();
                     }
                 });
-        addMenuItem(rowB, R.drawable.ic_find, "页内查找",
+        addMenuItem(rowB, R.drawable.ic_find, getString(R.string.menu_find),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         showFindBar();
                     }
                 });
-        addMenuItem(rowB, R.drawable.ic_settings, "设置",
+        addMenuItem(rowB, R.drawable.ic_settings, getString(R.string.menu_settings),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -727,7 +735,7 @@ public class MainActivity extends Activity {
                                 SettingsActivity.class));
                     }
                 });
-        addMenuItem(rowB, R.drawable.ic_volume, "大声朗读",
+        addMenuItem(rowB, R.drawable.ic_volume, getString(R.string.menu_tts),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -739,14 +747,14 @@ public class MainActivity extends Activity {
 
         // C 行
         LinearLayout rowC = newRow();
-        addMenuItem(rowC, R.drawable.ic_add, "新标签页",
+        addMenuItem(rowC, R.drawable.ic_add, getString(R.string.new_tab),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         newTab(HOME_URL, false);
                     }
                 });
-        addMenuItem(rowC, R.drawable.ic_incognito, "无痕新标签页",
+        addMenuItem(rowC, R.drawable.ic_incognito, getString(R.string.menu_incognito_tab),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -754,14 +762,14 @@ public class MainActivity extends Activity {
                     }
                 });
         addMenuItem(rowC, R.drawable.ic_block,
-                adblockOn ? "广告拦截·开" : "广告拦截·关",
+                adblockOn ? getString(R.string.menu_adblock_on) : getString(R.string.menu_adblock_off),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         toggleAdblock();
                     }
                 });
-        addMenuItem(rowC, R.drawable.ic_refresh, "更新规则",
+        addMenuItem(rowC, R.drawable.ic_refresh, getString(R.string.update_rules),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -771,28 +779,28 @@ public class MainActivity extends Activity {
         root.addView(rowC);
 
         LinearLayout rowD = newRow();
-        addMenuItem(rowD, R.drawable.ic_file_download, "下载此页面",
+        addMenuItem(rowD, R.drawable.ic_file_download, getString(R.string.menu_save_page),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         savePageArchive();
                     }
                 });
-        addMenuItem(rowD, R.drawable.ic_home_screen, "添加至手机",
+        addMenuItem(rowD, R.drawable.ic_home_screen, getString(R.string.menu_pin_home),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         pinToHome();
                     }
                 });
-        addMenuItem(rowD, R.drawable.ic_logout, "退出浏览器",
+        addMenuItem(rowD, R.drawable.ic_logout, getString(R.string.menu_exit),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
                         finishAffinity();
                     }
                 });
-        addMenuItem(rowD, R.drawable.ic_wallpaper, "更换壁纸",
+        addMenuItem(rowD, R.drawable.ic_wallpaper, getString(R.string.menu_change_wallpaper),
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
@@ -882,20 +890,20 @@ public class MainActivity extends Activity {
         s.putExtra(Intent.EXTRA_SUBJECT, webView.getTitle());
         s.putExtra(Intent.EXTRA_TEXT, webView.getTitle() + "\n" + url);
         try {
-            startActivity(Intent.createChooser(s, "共享链接"));
+            startActivity(Intent.createChooser(s, getString(R.string.share_chooser)));
         } catch (Exception e) {
-            Toast.makeText(this, "没有可用的分享应用", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.no_share_app), Toast.LENGTH_SHORT).show();
         }
     }
 
     private void addBookmark() {
         String url = webView.getUrl();
         if (url == null || url.equals(HOME_URL)) {
-            Toast.makeText(this, "当前页面不能收藏", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.bookmark_not_allowed), Toast.LENGTH_SHORT).show();
             return;
         }
         bookmarkDb.add(url, webView.getTitle());
-        Toast.makeText(this, "已加入收藏夹", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.bookmark_added), Toast.LENGTH_SHORT).show();
     }
 
     private void toggleDesktopUa() {
@@ -904,7 +912,7 @@ public class MainActivity extends Activity {
                 desktopMode ? DESKTOP_UA : mobileUa);
         webView.reload();
         Toast.makeText(this,
-                desktopMode ? "已切换桌面版 UA（可能增加验证概率）" : "已切回移动版 UA",
+                desktopMode ? getString(R.string.ua_desktop) : getString(R.string.ua_mobile),
                 Toast.LENGTH_LONG).show();
     }
 
@@ -912,12 +920,12 @@ public class MainActivity extends Activity {
         boolean on = !adBlocker.isEnabled();
         adBlocker.setEnabled(on);
         prefs.edit().putBoolean(KEY_ADBLOCK, on).apply();
-        Toast.makeText(this, on ? "广告拦截开" : "广告拦截关",
+        Toast.makeText(this, on ? getString(R.string.adblock_on_toast) : getString(R.string.adblock_off_toast),
                 Toast.LENGTH_SHORT).show();
     }
 
     private void updateAdblockRules() {
-        setStatus("正在更新广告规则…");
+        setStatus(getString(R.string.updating_rules));
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -929,11 +937,11 @@ public class MainActivity extends Activity {
                         setStatus("");
                         if (n >= 0) {
                             Toast.makeText(MainActivity.this,
-                                    "广告规则已更新：" + n + " 条",
+                                    getString(R.string.rules_updated, n),
                                     Toast.LENGTH_LONG).show();
                         } else {
                             Toast.makeText(MainActivity.this,
-                                    "更新失败，请检查网络后重试",
+                                    getString(R.string.update_failed),
                                     Toast.LENGTH_LONG).show();
                         }
                     }
@@ -952,10 +960,10 @@ public class MainActivity extends Activity {
             String name = "page-" + System.currentTimeMillis() + ".mht";
             File f = new File(dir, name);
             webView.saveWebArchive(f.getAbsolutePath());
-            Toast.makeText(this, "已保存到：" + f.getAbsolutePath(),
+            Toast.makeText(this, getString(R.string.saved_to, f.getAbsolutePath()),
                     Toast.LENGTH_LONG).show();
         } catch (Exception e) {
-            Toast.makeText(this, "保存失败", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.save_failed), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -963,7 +971,7 @@ public class MainActivity extends Activity {
     private void pinToHome() {
         String url = webView.getUrl();
         if (url == null || url.equals(HOME_URL)) {
-            Toast.makeText(this, "先打开一个网页再添加", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.open_page_first), Toast.LENGTH_SHORT).show();
             return;
         }
         try {
@@ -982,11 +990,11 @@ public class MainActivity extends Activity {
                         .build();
                 sm.requestPinShortcut(info, null);
             } else {
-                Toast.makeText(this, "当前桌面不支持添加快捷方式",
+                Toast.makeText(this, getString(R.string.shortcut_not_supported),
                         Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
-            Toast.makeText(this, "添加失败", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.pin_failed), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -1015,9 +1023,9 @@ public class MainActivity extends Activity {
             Intent i = new Intent(Intent.ACTION_GET_CONTENT);
             i.setType("image/*");
             startActivityForResult(
-                    Intent.createChooser(i, "选择壁纸"), REQUEST_WALLPAPER);
+                    Intent.createChooser(i, getString(R.string.pick_wallpaper)), REQUEST_WALLPAPER);
         } catch (Exception e) {
-            Toast.makeText(this, "打不开相册", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.gallery_unavailable), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -1038,11 +1046,11 @@ public class MainActivity extends Activity {
                         public void run() {
                             if (f != null) {
                                 Toast.makeText(MainActivity.this,
-                                        "壁纸已更换", Toast.LENGTH_SHORT).show();
+                                        getString(R.string.wallpaper_changed), Toast.LENGTH_SHORT).show();
                                 reloadHomeIfShowing();
                             } else {
                                 Toast.makeText(MainActivity.this,
-                                        "图片读取失败", Toast.LENGTH_SHORT).show();
+                                        getString(R.string.image_read_failed), Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
@@ -1080,8 +1088,8 @@ public class MainActivity extends Activity {
                     return false;
                 }
                 new AlertDialog.Builder(MainActivity.this)
-                        .setTitle("图片")
-                        .setItems(new String[]{"设为壁纸"},
+                        .setTitle(R.string.dialog_image)
+                        .setItems(new String[]{getString(R.string.set_as_wallpaper)},
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface d,
@@ -1096,7 +1104,7 @@ public class MainActivity extends Activity {
     }
 
     private void downloadWallpaper(final String imgUrl) {
-        Toast.makeText(this, "正在下载壁纸…", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.downloading_wallpaper), Toast.LENGTH_SHORT).show();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -1107,7 +1115,7 @@ public class MainActivity extends Activity {
                     public void run() {
                         if (err == null) {
                             Toast.makeText(MainActivity.this,
-                                    "已设为壁纸", Toast.LENGTH_SHORT).show();
+                                    getString(R.string.wallpaper_set), Toast.LENGTH_SHORT).show();
                             reloadHomeIfShowing();
                         } else {
                             Toast.makeText(MainActivity.this, err,
@@ -1180,7 +1188,7 @@ public class MainActivity extends Activity {
         if (ttsSpeaking && tts != null) {
             tts.stop();
             ttsSpeaking = false;
-            Toast.makeText(this, "已停止朗读", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.tts_stopped), Toast.LENGTH_SHORT).show();
             return;
         }
         if (tts == null) {
@@ -1208,13 +1216,13 @@ public class MainActivity extends Activity {
                                     speakPageText();
                                 } else {
                                     Toast.makeText(MainActivity.this,
-                                            "朗读初始化失败", Toast.LENGTH_SHORT).show();
+                                            getString(R.string.tts_init_failed), Toast.LENGTH_SHORT).show();
                                     tts = null;
                                 }
                             }
                         });
             } catch (Exception e) {
-                Toast.makeText(this, "朗读初始化失败", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.tts_init_failed), Toast.LENGTH_SHORT).show();
                 tts = null;
             }
         } else {
@@ -1237,14 +1245,14 @@ public class MainActivity extends Activity {
                         String text = unquoteJs(value).trim();
                         if (TextUtils.isEmpty(text)) {
                             Toast.makeText(MainActivity.this,
-                                    "页面没有可朗读的文本", Toast.LENGTH_SHORT).show();
+                                    getString(R.string.tts_no_text), Toast.LENGTH_SHORT).show();
                             return;
                         }
                         ttsSpeaking = true;
                         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null,
                                 "wugan-tts");
                         Toast.makeText(MainActivity.this,
-                                "开始朗读，再点一次停止", Toast.LENGTH_SHORT).show();
+                                getString(R.string.tts_started), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -1317,10 +1325,10 @@ public class MainActivity extends Activity {
                             getSystemService(DOWNLOAD_SERVICE);
                     dm.enqueue(req);
                     Toast.makeText(MainActivity.this,
-                            "开始下载：" + name, Toast.LENGTH_SHORT).show();
+                            getString(R.string.download_started, name), Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this,
-                            "下载失败", Toast.LENGTH_SHORT).show();
+                            getString(R.string.download_failed), Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -1362,7 +1370,7 @@ public class MainActivity extends Activity {
                 showingSniff = false;
                 statusView.setOnClickListener(null);
                 if (isChallengeUrl(url)) {
-                    setStatus("Cloudflare 验证中，稍候…");
+                    setStatus(getString(R.string.cf_verifying));
                 } else {
                     setStatus("");
                 }
@@ -1387,7 +1395,7 @@ public class MainActivity extends Activity {
                     return; // 嗅探提示优先，不被覆盖
                 }
                 if (isChallengeUrl(url)) {
-                    setStatus("Cloudflare 验证中，稍候…");
+                    setStatus(getString(R.string.cf_verifying));
                 } else {
                     setStatus("");
                 }
@@ -1402,7 +1410,7 @@ public class MainActivity extends Activity {
                 if (request.isForMainFrame()) {
                     pageLoading = false;
                     updateRefreshButton();
-                    setStatus("加载失败：" + error.getDescription());
+                    setStatus(getString(R.string.load_failed, error.getDescription()));
                 }
             }
         });
@@ -1487,7 +1495,7 @@ public class MainActivity extends Activity {
             return;
         }
         showingSniff = true;
-        setStatus("嗅探到视频(" + n + ")，点击播放");
+        setStatus(getString(R.string.video_sniffed, n));
         statusView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1510,7 +1518,7 @@ public class MainActivity extends Activity {
         }
         final String[] items = list.toArray(new String[0]);
         new AlertDialog.Builder(this)
-                .setTitle("选择要播放的视频")
+                .setTitle(R.string.pick_video)
                 .setItems(items, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface d, int which) {

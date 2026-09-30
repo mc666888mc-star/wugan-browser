@@ -32,7 +32,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="外观和布局"
+                android:text="@string/section_appearance"
                 android:textColor="#FFFFFF"
                 android:textSize="15sp"
                 android:textStyle="bold" />
@@ -57,7 +57,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="地址栏位置"
+                android:text="@string/address_bar_position"
                 android:textColor="#E0E0E0"
                 android:textSize="15sp" />
 
@@ -65,7 +65,7 @@
                 android:id="@+id/addr_pos_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="顶部 ›"
+                android:text="@string/addr_top"
                 android:textColor="#888888"
                 android:textSize="14sp" />
         </LinearLayout>
@@ -87,7 +87,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="搜索引擎"
+                android:text="@string/section_search"
                 android:textColor="#FFFFFF"
                 android:textSize="15sp"
                 android:textStyle="bold" />
@@ -112,7 +112,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="默认搜索引擎"
+                android:text="@string/default_engine"
                 android:textColor="#E0E0E0"
                 android:textSize="15sp" />
 
@@ -142,7 +142,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="壁纸"
+                android:text="@string/section_wallpaper"
                 android:textColor="#FFFFFF"
                 android:textSize="15sp"
                 android:textStyle="bold" />
@@ -167,7 +167,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="更换壁纸"
+                android:text="@string/menu_change_wallpaper"
                 android:textColor="#E0E0E0"
                 android:textSize="15sp" />
 
@@ -198,7 +198,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="轮换壁纸"
+                    android:text="@string/rotate_wallpapers"
                     android:textColor="#E0E0E0"
                     android:textSize="15sp" />
 
@@ -206,7 +206,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="每次打开主页换下一张（只轮换已下载的）"
+                    android:text="@string/rotate_desc"
                     android:textColor="#888888"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -235,7 +235,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="管理壁纸"
+                android:text="@string/manage_wallpapers"
                 android:textColor="#E0E0E0"
                 android:textSize="15sp" />
 
@@ -265,7 +265,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="隐私和安全"
+                android:text="@string/section_privacy"
                 android:textColor="#FFFFFF"
                 android:textSize="15sp"
                 android:textStyle="bold" />
@@ -286,7 +286,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="广告拦截"
+                android:text="@string/adblock"
                 android:textColor="#E0E0E0"
                 android:textSize="15sp" />
 
@@ -314,7 +314,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="更新广告规则"
+                android:text="@string/update_adblock_rules"
                 android:textColor="#E0E0E0"
                 android:textSize="15sp" />
 
@@ -344,7 +344,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="清除浏览数据"
+                android:text="@string/clear_data"
                 android:textColor="#E0E0E0"
                 android:textSize="15sp" />
 
@@ -370,7 +370,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="无痕模式"
+                android:text="@string/incognito_mode"
                 android:textColor="#E0E0E0"
                 android:textSize="15sp" />
 
@@ -397,7 +397,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="无障碍"
+                android:text="@string/section_a11y"
                 android:textColor="#FFFFFF"
                 android:textSize="15sp"
                 android:textStyle="bold" />
@@ -423,7 +423,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="自动点选验证"
+                    android:text="@string/auto_tap"
                     android:textColor="#E0E0E0"
                     android:textSize="15sp" />
 
@@ -432,7 +432,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="状态：未开启"
+                    android:text="@string/a11y_off"
                     android:textColor="#888888"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -441,7 +441,7 @@
                 android:id="@+id/a11y_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="去开启" />
+                android:text="@string/go_enable" />
         </LinearLayout>
 
         <!-- ===== 设为默认浏览器 ===== -->
@@ -468,7 +468,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="10dp"
-                android:text="设为默认浏览器"
+                android:text="@string/default_browser"
                 android:textColor="#FFFFFF"
                 android:textSize="15sp"
                 android:textStyle="bold" />
@@ -499,7 +499,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="关于"
+                android:text="@string/about"
                 android:textColor="#FFFFFF"
                 android:textSize="15sp"
                 android:textStyle="bold" />

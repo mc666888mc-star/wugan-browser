@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="管理壁纸"
+        android:text="@string/manage_wallpapers"
         android:textColor="#FFFFFF"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="12dp"
-        android:text="点一下设为当前壁纸，长按删除"
+        android:text="@string/wallpaper_tip"
         android:textColor="#888888"
         android:textSize="13sp" />
 
@@ -40,7 +40,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="center"
-        android:text="壁纸库是空的，主页会显示深色背景"
+        android:text="@string/wallpaper_empty"
         android:textColor="#888888"
         android:textSize="14sp"
         android:visibility="gone" />

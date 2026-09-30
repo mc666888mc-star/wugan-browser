@@ -50,7 +50,7 @@
             android:layout_marginEnd="4dp"
             android:background="@drawable/pill_bg"
             android:gravity="center_vertical"
-            android:hint="输入网址或搜索关键词"
+            android:hint="@string/address_hint_full"
             android:imeOptions="actionGo"
             android:inputType="textUri"
             android:paddingStart="14dp"
@@ -69,7 +69,7 @@
             android:layout_height="48dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="刷新"
+            android:contentDescription="@string/refresh"
             android:focusable="true"
             android:padding="12dp"
             android:src="@drawable/ic_refresh" />
@@ -129,7 +129,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="在页面上查找"
+            android:hint="@string/find_hint"
             android:imeOptions="actionSearch"
             android:inputType="text"
             android:singleLine="true"
@@ -143,7 +143,7 @@
             android:layout_height="44dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="上一个"
+            android:contentDescription="@string/find_prev"
             android:focusable="true"
             android:padding="10dp"
             android:src="@drawable/ic_arrow_up" />
@@ -154,7 +154,7 @@
             android:layout_height="44dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="下一个"
+            android:contentDescription="@string/find_next"
             android:focusable="true"
             android:padding="10dp"
             android:src="@drawable/ic_arrow_down" />
@@ -165,7 +165,7 @@
             android:layout_height="44dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="关闭查找"
+            android:contentDescription="@string/find_close"
             android:focusable="true"
             android:padding="10dp"
             android:src="@drawable/ic_close" />
@@ -188,7 +188,7 @@
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="后退"
+            android:contentDescription="@string/back"
             android:focusable="true"
             android:padding="14dp"
             android:src="@drawable/ic_arrow_back" />
@@ -200,7 +200,7 @@
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="前进"
+            android:contentDescription="@string/forward"
             android:focusable="true"
             android:padding="14dp"
             android:src="@drawable/ic_arrow_forward" />
@@ -212,7 +212,7 @@
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="主页"
+            android:contentDescription="@string/home"
             android:focusable="true"
             android:padding="14dp"
             android:src="@drawable/ic_home" />
@@ -224,7 +224,7 @@
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="新标签页"
+            android:contentDescription="@string/new_tab"
             android:focusable="true"
             android:padding="14dp"
             android:src="@drawable/ic_add" />
@@ -242,7 +242,7 @@
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_gravity="center"
-                android:contentDescription="标签页"
+                android:contentDescription="@string/tabs"
                 android:src="@drawable/ic_tab" />
 
             <TextView
@@ -264,7 +264,7 @@
             android:layout_weight="1"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="菜单"
+            android:contentDescription="@string/menu"
             android:focusable="true"
             android:padding="14dp"
             android:src="@drawable/ic_more_vert" />

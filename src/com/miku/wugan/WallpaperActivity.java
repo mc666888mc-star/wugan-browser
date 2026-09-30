@@ -40,7 +40,7 @@ public class WallpaperActivity extends Activity {
                                     int position, long id) {
                 File f = wallpapers[position];
                 WallpaperManager.setCurrent(WallpaperActivity.this, f);
-                Toast.makeText(WallpaperActivity.this, "已设为当前壁纸",
+                Toast.makeText(WallpaperActivity.this, getString(R.string.wallpaper_set_current),
                         Toast.LENGTH_SHORT).show();
                 refresh();
             }
@@ -50,9 +50,9 @@ public class WallpaperActivity extends Activity {
             public boolean onItemLongClick(AdapterView<?> parent, View view,
                                            final int position, long id) {
                 new AlertDialog.Builder(WallpaperActivity.this)
-                        .setTitle("删除壁纸")
-                        .setMessage("确定删除这张壁纸吗？")
-                        .setPositiveButton("删除",
+                        .setTitle(R.string.delete_wallpaper)
+                        .setMessage(R.string.delete_wallpaper_confirm)
+                        .setPositiveButton(R.string.delete,
                                 new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface d,
@@ -62,18 +62,18 @@ public class WallpaperActivity extends Activity {
                                                 WallpaperActivity.this, f)) {
                                             Toast.makeText(
                                                     WallpaperActivity.this,
-                                                    "已删除", Toast.LENGTH_SHORT)
+                                                    getString(R.string.deleted), Toast.LENGTH_SHORT)
                                                     .show();
                                         } else {
                                             Toast.makeText(
                                                     WallpaperActivity.this,
-                                                    "删除失败", Toast.LENGTH_SHORT)
+                                                    getString(R.string.delete_failed), Toast.LENGTH_SHORT)
                                                     .show();
                                         }
                                         refresh();
                                     }
                                 })
-                        .setNegativeButton("取消", null)
+                        .setNegativeButton(R.string.cancel, null)
                         .show();
                 return true;
             }

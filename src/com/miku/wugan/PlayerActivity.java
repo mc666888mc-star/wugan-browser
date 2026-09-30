@@ -51,7 +51,7 @@ public class PlayerActivity extends Activity {
 
         String url = getIntent().getStringExtra("url");
         if (url == null || url.isEmpty()) {
-            Toast.makeText(this, "没有可播放的地址", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.no_play_url), Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -66,7 +66,7 @@ public class PlayerActivity extends Activity {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
                 Toast.makeText(PlayerActivity.this,
-                        "播放失败，视频源可能已失效或不支持", Toast.LENGTH_LONG).show();
+                        getString(R.string.play_failed), Toast.LENGTH_LONG).show();
                 return true;
             }
         });

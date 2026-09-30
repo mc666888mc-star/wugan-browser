@@ -48,6 +48,12 @@ GPLv3（见 `LICENSE` 文件）。
 
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
+## v8.4 更新日志（中英双语）
+
+- **英文本地化**：`res/values/strings.xml`（中文默认）+ `res/values-en/strings.xml`（英文），共约 130 条文案；手机系统语言为英文时 App 内全部文案（菜单、按钮、toast、对话框、设置项、壁纸、播放器）显示英文，应用名显示 Wugan Browser；中文系统不受影响
+- **抽取方式**：Java 硬编码中文全部换成 `getString(R.string.xxx)`，layout 硬编码换成 `@string/xxx`；带参数的用占位符（`%1$s`/`%1$d`），如"广告规则已更新：%1$d 条"；搜索引擎 chip 的"谷歌"按语言显示 Google/谷歌
+- **不动**：`ChallengeTapService` 的检测关键词（功能性匹配文本，非 UI）、所有功能逻辑；Log 日志中文保留
+
 ## v8 更新日志（Edge 式双栏工具栏）
 
 - **工具栏改 Edge 式双栏**：顶部地址行 = [引擎 chip][地址 EditText 撑满加宽][刷新/停止二合一按钮]；底部导航行 = [后退][前进][主页][新标签 +][标签页数][⋯菜单]，6 图标均分宽度。顶部不再放后退/前进/tab/菜单，不挤了
