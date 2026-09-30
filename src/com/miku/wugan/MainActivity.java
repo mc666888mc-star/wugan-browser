@@ -80,6 +80,7 @@ public class MainActivity extends Activity {
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
                     + " (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
     private static final int TAB_MAX = 10;
+    private static final int REQUEST_WALLPAPER = 1001;
 
     private static final int SNIFF_MAX = 20;
     private static final String[] VIDEO_EXTS = {
@@ -100,11 +101,11 @@ public class MainActivity extends Activity {
     private WebView webView;
     private ProgressBar progressBar;
     private TextView statusView;
-    private TextView addressPill;
+    private EditText addressPill;
     private TextView tabsCount;
     private LinearLayout findBar;
     private EditText findInput;
-    private boolean addrBarTop = false;
+    private boolean addrBarTop = true;
 
     private HistoryDbHelper historyDb;
     private BookmarkDbHelper bookmarkDb;
@@ -129,7 +130,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
-        addrBarTop = prefs.getBoolean(KEY_ADDR_TOP, false);
+        addrBarTop = prefs.getBoolean(KEY_ADDR_TOP, true);
         applyToolbarPosition();
         historyDb = new HistoryDbHelper(this);
         bookmarkDb = new BookmarkDbHelper(this);
@@ -148,6 +149,14 @@ public class MainActivity extends Activity {
         setupWebView();
         setupBottomBar();
         setupFindBar();
+        setupWallpaperLongPress();
+        // 壁纸库种子（首次启动把默认壁纸拷入库），后台做
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                WallpaperManager.ensureSeeded(MainActivity.this);
+            }
+        }).start();
 
         String startUrl = HOME_URL;
         Intent intent = getIntent();
@@ -185,7 +194,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         // 设置页改了地址栏位置：重建 Activity 即时生效
-        boolean top = prefs.getBoolean(KEY_ADDR_TOP, false);
+        boolean top = prefs.getBoolean(KEY_ADDR_TOP, true);
         if (top != addrBarTop) {
             recreate();
             return;
@@ -216,12 +225,45 @@ public class MainActivity extends Activity {
                 }
             }
         });
-        addressPill.setOnClickListener(new View.OnClickListener() {
+        addressPill.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void onClick(View v) {
-                showAddressDialog();
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    // 点一下：全选当前网址 + 弹键盘
+                    addressPill.selectAll();
+                    InputMethodManager imm = (InputMethodManager)
+                            getSystemService(INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.showSoftInput(addressPill,
+                                InputMethodManager.SHOW_IMPLICIT);
+                    }
+                } else {
+                    hideKeyboard(addressPill);
+                }
             }
         });
+        addressPill.setOnEditorActionListener(
+                new TextView.OnEditorActionListener() {
+                    @Override
+                    public boolean onEditorAction(TextView v, int actionId,
+                                                   KeyEvent event) {
+                        boolean go = actionId == EditorInfo.IME_ACTION_GO
+                                || (event != null
+                                && event.getKeyCode() == KeyEvent.KEYCODE_ENTER
+                                && event.getAction() == KeyEvent.ACTION_DOWN);
+                        if (go) {
+                            String url = resolveInput(
+                                    addressPill.getText().toString());
+                            if (url != null) {
+                                addressPill.clearFocus();
+                                hideKeyboard(addressPill);
+                                loadInCurrentTab(url);
+                            }
+                            return true;
+                        }
+                        return false;
+                    }
+                });
         findViewById(R.id.tabs_container).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -238,34 +280,6 @@ public class MainActivity extends Activity {
 
     private void updateTabsButton() {
         tabsCount.setText(String.valueOf(tabs.size()));
-    }
-
-    /** 地址 pill 点击：弹输入框改址 */
-    private void showAddressDialog() {
-        final EditText input = new EditText(this);
-        input.setInputType(EditorInfo.TYPE_TEXT_VARIATION_URI);
-        input.setSingleLine(true);
-        String cur = webView.getUrl();
-        if (cur != null && !cur.equals(HOME_URL)) {
-            input.setText(cur);
-            input.selectAll();
-        }
-        input.setHint("输入网址或搜索关键词");
-        new AlertDialog.Builder(this)
-                .setTitle("前往")
-                .setView(input)
-                .setPositiveButton("进入", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface d, int which) {
-                        String url = resolveInput(input.getText().toString());
-                        if (url != null) {
-                            hideKeyboard(input);
-                            loadInCurrentTab(url);
-                        }
-                    }
-                })
-                .setNegativeButton("取消", null)
-                .show();
     }
 
     /**
@@ -643,11 +657,13 @@ public class MainActivity extends Activity {
                         finishAffinity();
                     }
                 });
-        // 补一个空位，保持 4 列对齐
-        View spacer = new View(this);
-        spacer.setLayoutParams(new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        rowD.addView(spacer);
+        addMenuItem(rowD, R.drawable.ic_wallpaper, "更换壁纸",
+                new View.OnClickListener() {
+                    @Override public void onClick(View v) {
+                        d.dismiss();
+                        pickWallpaper();
+                    }
+                });
         root.addView(rowD);
 
         sv.addView(root);
@@ -849,6 +865,135 @@ public class MainActivity extends Activity {
         }
     }
 
+    // ================= 壁纸 =================
+
+    /** 主页应用壁纸：库空则不调用，home.html 用深色渐变兜底 */
+    private void applyWallpaper() {
+        final java.io.File f = WallpaperManager.current(this);
+        if (f == null || !f.exists()) {
+            return;
+        }
+        final String js = "setWallpaper('file://" + f.getAbsolutePath() + "')";
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (webView != null) {
+                    webView.evaluateJavascript(js, null);
+                }
+            }
+        });
+    }
+
+    /** 菜单"更换壁纸"：相册选图 */
+    private void pickWallpaper() {
+        try {
+            Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+            i.setType("image/*");
+            startActivityForResult(
+                    Intent.createChooser(i, "选择壁纸"), REQUEST_WALLPAPER);
+        } catch (Exception e) {
+            Toast.makeText(this, "打不开相册", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+                                    Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_WALLPAPER && resultCode == RESULT_OK
+                && data != null && data.getData() != null) {
+            final android.net.Uri uri = data.getData();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    final java.io.File f =
+                            WallpaperManager.addFromUri(MainActivity.this, uri);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (f != null) {
+                                Toast.makeText(MainActivity.this,
+                                        "壁纸已更换", Toast.LENGTH_SHORT).show();
+                                reloadHomeIfShowing();
+                            } else {
+                                Toast.makeText(MainActivity.this,
+                                        "图片读取失败", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
+            }).start();
+        }
+    }
+
+    /** 当前 tab 正在看主页 → 重载以应用新壁纸 */
+    private void reloadHomeIfShowing() {
+        String u = webView != null ? webView.getUrl() : null;
+        if (HOME_URL.equals(u)) {
+            webView.reload();
+        }
+    }
+
+    /** 网页长按图片 → "设为壁纸" */
+    private void setupWallpaperLongPress() {
+        webView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                WebView.HitTestResult r = webView.getHitTestResult();
+                if (r == null) {
+                    return false;
+                }
+                int type = r.getType();
+                if (type != WebView.HitTestResult.IMAGE_TYPE
+                        && type != WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+                    return false;
+                }
+                final String imgUrl = r.getExtra();
+                if (imgUrl == null
+                        || (!imgUrl.startsWith("http://")
+                        && !imgUrl.startsWith("https://"))) {
+                    return false;
+                }
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("图片")
+                        .setItems(new String[]{"设为壁纸"},
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface d,
+                                                        int which) {
+                                        downloadWallpaper(imgUrl);
+                                    }
+                                })
+                        .show();
+                return true;
+            }
+        });
+    }
+
+    private void downloadWallpaper(final String imgUrl) {
+        Toast.makeText(this, "正在下载壁纸…", Toast.LENGTH_SHORT).show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final String err = WallpaperManager.downloadFromUrl(
+                        MainActivity.this, imgUrl);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (err == null) {
+                            Toast.makeText(MainActivity.this,
+                                    "已设为壁纸", Toast.LENGTH_SHORT).show();
+                            reloadHomeIfShowing();
+                        } else {
+                            Toast.makeText(MainActivity.this, err,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+        }).start();
+    }
+
     // ================= 页内查找 =================
 
     private void setupFindBar() {
@@ -1012,6 +1157,8 @@ public class MainActivity extends Activity {
         s.setUseWideViewPort(true);
         s.setBuiltInZoomControls(true);
         s.setDisplayZoomControls(false);
+        // 主页 file:// 页要加载 file:// 本地壁纸，显式允许文件访问
+        s.setAllowFileAccess(true);
 
         // UA 加固：去掉暴露 WebView 身份的 "; wv" 标记，看起来像原生 Chrome Mobile。
         // 注意：保持移动端 UA，不伪装桌面端（UA 与 TLS 指纹表里不一反而更容易触发验证）。
@@ -1077,7 +1224,10 @@ public class MainActivity extends Activity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
-                addressPill.setText(url != null ? url : "");
+                // 页面加载完成才更新地址栏；正在打字（有焦点）时别打断
+                if (!addressPill.hasFocus()) {
+                    addressPill.setText(url != null ? url : "");
+                }
                 // 新页面：清空嗅探结果，状态栏控制权交还
                 synchronized (sniffed) {
                     sniffed.clear();
@@ -1095,6 +1245,10 @@ public class MainActivity extends Activity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 saveCurrentTab();
+                // 主页：应用壁纸（轮换开则每次取下一张）
+                if (HOME_URL.equals(url)) {
+                    applyWallpaper();
+                }
                 // 无痕（全局或当前 tab）不记录历史；验证页本身不记（噪音）
                 if (!isIncognitoNow() && url != null && url.startsWith("http")
                         && !isChallengeUrl(url)) {

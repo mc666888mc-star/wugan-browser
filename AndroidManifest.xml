@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.miku.wugan"
-    android:versionCode="4"
-    android:versionName="4.0">
+    android:versionCode="5"
+    android:versionName="5.0">
 
     <uses-sdk
         android:minSdkVersion="26"
@@ -41,6 +41,11 @@
             android:name=".SettingsActivity"
             android:exported="false"
             android:label="@string/settings_title" />
+
+        <activity
+            android:name=".WallpaperActivity"
+            android:exported="false"
+            android:label="管理壁纸" />
 
         <activity
             android:name=".PlayerActivity"

@@ -8,12 +8,14 @@
     android:background="#121212"
     android:orientation="vertical">
 
-    <!-- 工具栏（默认底部，可在设置里换到顶部；代码里动态重排） -->
+    <!-- 工具栏（默认顶部，可在设置里换到底部；代码里动态重排） -->
     <LinearLayout
         android:id="@+id/toolbar_container"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="#1F1F1F"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="4dp"
@@ -41,7 +43,8 @@
             android:padding="12dp"
             android:src="@drawable/ic_arrow_forward" />
 
-        <TextView
+        <!-- v5：地址栏直输 EditText。平时显示网址，点一下全选+弹键盘，回车跳转 -->
+        <EditText
             android:id="@+id/address_pill"
             android:layout_width="0dp"
             android:layout_height="40dp"
@@ -49,14 +52,16 @@
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
             android:background="@drawable/pill_bg"
-            android:clickable="true"
-            android:ellipsize="end"
-            android:focusable="true"
             android:gravity="center_vertical"
+            android:hint="输入网址或搜索关键词"
+            android:imeOptions="actionGo"
+            android:inputType="textUri"
             android:paddingStart="14dp"
             android:paddingEnd="14dp"
             android:singleLine="true"
-            android:textColor="#E0E0E0"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:textCursorDrawable="@null"
             android:textSize="14sp" />
 
         <FrameLayout

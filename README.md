@@ -48,6 +48,14 @@ GPLv3（见 `LICENSE` 文件）。
 
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
+## v5 更新日志（地址栏直输 + 默认顶部 + 本地壁纸库 + Edge 化设置页）
+
+- **地址栏直输**：工具栏地址 pill 从 TextView 换成 EditText，平时显示当前网址，点一下全选+弹键盘，回车（IME Go）直接跳转，"前往"对话框删除；页面加载完成时若正在打字（有焦点）不刷新地址栏，避免打断输入
+- **地址栏默认位置改顶部**：新安装默认顶部（老用户已存偏好不受影响）；设置 → 外观和布局 里仍可切顶部/底部
+- **主页壁纸模式（全本地/离线）**：`assets/home.html` 重写为全屏壁纸 + 毛玻璃卡片（标题/提示/壁纸站快捷入口 Wallhaven / Unsplash / Pexels / Bing Wallpaper）；默认壁纸 `assets/default_wallpaper.jpg` 首次启动拷入 `getFilesDir()/wallpapers/` 壁纸库
+- **壁纸库管理**（`WallpaperManager`）：菜单"更换壁纸"用相册图片入库并设为当前；设置页"壁纸"组可更换/轮换（每次打开主页换下一张，序号持久化循环）/管理（缩略图网格，点设为当前、长按删除）；网页长按图片 → "设为壁纸"（后台下载，只收 http/https，data: 等给明确提示）；库空时主页用深色渐变兜底
+- **设置页 Edge 化**：分组图标行 —— 外观和布局 / 搜索引擎 / 壁纸 / 隐私和安全 / 无障碍 / 设为默认浏览器（跳系统默认应用设置）/ 关于（v5.0，GPLv3，Material Icons 出处保留）
+
 ## v4 更新日志（UI 美术打磨 + 地址栏/搜索引擎可设置）
 
 - 图标全面换装：菜单/工具栏 24 个图标统一换成 Google Material Icons（Round 风格白色），替换掉原来参差不齐的系统图标
