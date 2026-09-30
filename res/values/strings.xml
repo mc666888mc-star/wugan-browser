@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">无感浏览器</string>
+    <string name="address_hint">输入网址</string>
+    <string name="go">进入</string>
+    <string name="back">后退</string>
+    <string name="forward">前进</string>
+    <string name="history">历史</string>
+    <string name="history_title">浏览历史</string>
+    <string name="clear_history">清空历史</string>
+    <string name="incognito">无痕</string>
+    <string name="incognito_on">无痕·开</string>
+    <string name="adblock_on">广告：开</string>
+    <string name="adblock_off">广告：关</string>
+    <string name="update_rules">更新规则</string>
+    <string name="rotate">横屏</string>
+    <string name="to_portrait">竖屏</string>
+    <string name="accessibility_description">自动点选 Cloudflare 人机验证复选框，省去手动点勾的时间</string>
+</resources>
