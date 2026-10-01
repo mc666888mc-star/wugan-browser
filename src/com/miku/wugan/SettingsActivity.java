@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -165,6 +166,38 @@ public class SettingsActivity extends Activity {
                 showA11yDiag();
             }
         });
+        // v10.4：一键直达系统设置，少走弯路
+        findViewById(R.id.appinfo_row).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 应用信息页：右上角 ⋮ → 允许受限制的设置（更新后要重开）
+                Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                i.setData(Uri.parse("package:" + getPackageName()));
+                startActivity(i);
+            }
+        });
+        findViewById(R.id.battery_row).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 电池优化页：允许后台活动，防止服务被系统杀掉
+                try {
+                    startActivity(new Intent(
+                            Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+                } catch (Exception e) {
+                    Toast.makeText(SettingsActivity.this,
+                            getString(R.string.cant_open_settings),
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        findViewById(R.id.taptest_row).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(SettingsActivity.this, MainActivity.class);
+                i.putExtra("url", "file:///android_asset/taptest.html");
+                startActivity(i);
+            }
+        });
 
         // ---- 设为默认浏览器 ----
         findViewById(R.id.default_browser_row).setOnClickListener(new View.OnClickListener() {
@@ -190,9 +223,16 @@ public class SettingsActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        boolean on = isA11yServiceOn();
-        a11yStatus.setText(on ? getString(R.string.a11y_on)
-                : getString(R.string.a11y_off_tap));
+        // v10.4 三态：未开启 / 开了但没跑起来 / 运行中
+        boolean inList = isInSecureList();
+        boolean running = isInRunningList();
+        if (running) {
+            a11yStatus.setText(getString(R.string.a11y_on));
+        } else if (inList) {
+            a11yStatus.setText(getString(R.string.a11y_on_not_running));
+        } else {
+            a11yStatus.setText(getString(R.string.a11y_off_tap));
+        }
         refreshSettingsValues();
     }
 
@@ -343,11 +383,6 @@ public class SettingsActivity extends Activity {
                 Toast.LENGTH_SHORT).show();
     }
 
-    /** 无障碍服务是否已启用：系统开关开 + 本服务在已启用列表里 */
-    private boolean isA11yServiceOn() {
-        return isInSecureList() || isInRunningList();
-    }
-
     /** 本服务的 flatten 名：com.miku.wugan/com.miku.wugan.ChallengeTapService */
     private String myFlattenName() {
         return new ComponentName(this, ChallengeTapService.class).flattenToString();
@@ -457,6 +492,10 @@ public class SettingsActivity extends Activity {
         sb.append("\n");
         sb.append(getString(R.string.a11y_diag_raw)).append(":\n")
                 .append(raw != null ? raw : "-");
+        // v10.4：开了但没跑起来时，直接在诊断框里给人话指引
+        if (isInSecureList() && !isInRunningList()) {
+            sb.append(getString(R.string.a11y_diag_hint_not_running));
+        }
 
         new AlertDialog.Builder(this)
                 .setTitle(R.string.a11y_diag_title)

@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v10.3（versionCode 18）
+- 当前版本 / Current version：v10.4（versionCode 19）
 - 开源协议 / License：GPLv3
 
 ---
@@ -75,6 +75,13 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v10.4（点选测试靶场 + 一键直达设置）
+
+- 新增「🧪 自动点选测试」：内置确定性测试页，用 Cloudflare 官方强制交互测试 key，每次必定弹出勾选框——几秒就知道点选灵不灵，不用再去注册页碰运气、录屏
+- 设置页无障碍状态改三态：「未开启 / 已开启 ✓ / 已开启但系统没把它跑起来 ⚠️」，开了没跑时直接给人话指引（诊断框里也加了同一段提示）
+- 新增一键直达：「应用信息」（去开"允许受限制的设置"，更新 App 后要重开）、「电池优化」（允许后台活动，防服务被杀）；无障碍直达按钮本来就有
+- 更新说明：以后每次更新 App，都要重走一遍「应用信息 → 右上角 ⋮ → 允许受限制的设置」，否则无障碍服务会被系统收回
 
 #### v10.3（下载器修文件名/打开/重命名）
 
@@ -232,6 +239,13 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v10.4 (tap-test range + settings shortcuts)
+
+- New "🧪 Auto-tap test": a built-in deterministic test page using Cloudflare's official force-interactive test key, so the checkbox appears every single time — know in seconds whether tapping works, no more sign-up-page roulette or screen recordings
+- Accessibility status is now three-state: off / on ✓ / on-but-not-running ⚠️, with plain-language guidance when the system lists the service but won't run it (same hint added to the diagnostics dialog)
+- New one-tap shortcuts: "App info" (re-enable "Allow restricted settings" — required again after every app update) and "Battery optimization" (allow background activity so the system doesn't kill the service); the accessibility shortcut already existed
+- Release note: after every app update, redo "App info → ⋮ → Allow restricted settings", or the system will revoke the accessibility service
 
 #### v10.3 (downloader filename/open/rename fixes)
 

@@ -123,6 +123,15 @@
     <string name="take_effect_hint">返回浏览器后即时生效</string>
     <string name="about_text">无感浏览器 %1$s\n系统 WebView 真内核 · 零 JS 注入 · GPLv3 开源\n自动点选 Cloudflare 验证，省去等待和点勾的时间\n图标：Material Icons by Google（Apache License 2.0）</string>
     <string name="a11y_on">状态：已开启 ✓</string>
+    <!-- v10.4：开了但没跑起来（更新后常见），直接给人话指引 -->
+    <string name="a11y_on_not_running">已开启，但系统没把它跑起来 ⚠️（点我看怎么办）</string>
+    <string name="a11y_diag_hint_not_running">\n⚠️ 名单里有、但没在运行：去系统"无障碍"把本服务关掉再打开；如果是刚更新完 App，先去"应用信息 → 右上角 ⋮ → 允许受限制的设置"重新打开。</string>
+    <string name="taptest_title">🧪 自动点选测试</string>
+    <string name="taptest_sub">打开必出勾选框的测试页，几秒就知道点选灵不灵</string>
+    <string name="jump_appinfo_title">应用信息</string>
+    <string name="jump_appinfo_sub">一键直达 → 右上角 ⋮ → 允许受限制的设置（更新后要重开）</string>
+    <string name="jump_battery_title">电池优化</string>
+    <string name="jump_battery_sub">一键直达 → 允许后台活动，防止服务被系统杀掉</string>
     <string name="a11y_off">状态：未开启（自动点选不工作）</string>
     <string name="addr_top">顶部 ›</string>
     <string name="addr_bottom">底部 ›</string>
