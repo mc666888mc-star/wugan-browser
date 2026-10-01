@@ -6,7 +6,7 @@
 > A clean, real-kernel browser with built-in VPN: one-tap encrypted tunnel, consistent fingerprint, reused clearance cookies, native access to the open internet.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v12.0（versionCode 28）
+- 当前版本 / Current version：v12.1（versionCode 29）
 - 开源协议 / License：GPLv3
 
 ---
@@ -65,6 +65,8 @@ bash build.sh
 ```
 
 要求：JDK 17（`build.sh` 已写死 PATH）、`~/Android/Sdk`（platforms/android-34 + build-tools/34.0.0）。
+内置 VPN 引擎需先编好 `~/workspace/usque-aar/usque.aar`（gomobile 把隧道引擎编成 AAR，`build.sh`
+会自动取出其中的 classes.jar 与 arm64 `.so` 打进 APK）。
 签名 keystore 在项目根 `debug.keystore`（常驻，不进 `out/`，保证覆盖安装不报签名冲突）。
 广告规则源文件在 `assets/adblock_hosts.txt`（构建时打进 APK，首次运行拷贝到应用私有目录后使用）。
 
@@ -76,12 +78,22 @@ GPLv3（见 `LICENSE` 文件）。
 
 ### 更新日志
 
+#### v12.1（VPN 引擎换血：exec 改 JNI）
+
+- **v12.0 的 exec 方案在真机上没跑起来**：`ProcessBuilder` 起外置二进制直接报 `Cannot run program`，
+  注册一步就失败。实测确认，改走已验证的路子。
+- **新引擎**：gomobile 把隧道引擎编译进 APK，进程内 JNI 调用，一次 exec 都没有——注册、
+  建隧道、127.0.0.1:1080 开 SOCKS5 全在进程内完成。设置页 UI 不变（一键开启/断开）。
+- 连接时做**端到端 SOCKS 探针**：经隧道真连一次 1.1.1.1:443，走完全程才算连上；
+  QUIC 不通自动改 HTTP2（TCP）再试。
+- MIT 署名见 `NOTICES.md` 与设置页「关于 → 开源许可」。
+
 #### v12.0（砍掉自动点选 + 内置 VPN）
 
 - **砍掉自动点选全部代码**：无障碍服务、诊断框、测试页、设置项全部删除，留出最纯净的壳子（之前没有一次被用户确认的成功点选，Turnstile 多数自过）。
 - **内置 VPN**：设置页新增「VPN（内置）」专区，一键注册普通账号并连接；浏览器 http/https 流量与下载器经加密隧道直达外网。免 root，不碰系统 VPN 设置。
 - 产品定位更新：从"减少验证打扰"改为"纯净浏览 + 内置 VPN"。
-- 内置隧道组件为 MIT 许可的二进制（未修改、原样分发），署名见 `NOTICES.md` 与设置页「关于 → 开源许可」。
+- 内置隧道组件为 MIT 许可（v12.0 是外置二进制形式，v12.1 起改为 JNI 编进 APK），署名见 `NOTICES.md` 与设置页「关于 → 开源许可」。
 
 #### v11.3（删掉多余的指引弹窗）
 

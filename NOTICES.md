@@ -1,7 +1,13 @@
 # 第三方组件许可声明
 
-本应用 APK 内含一个 MIT 许可证的加密隧道组件（二进制形式，未修改、原样分发）。
-按 MIT 许可证要求，保留其版权声明与许可文本如下：
+本应用内置的 VPN 加密隧道引擎基于以下 MIT 许可证的开源项目，
+以 gomobile JNI 方式编译进 APK、在应用进程内运行：
+
+- usque（github.com/Diniboy1123/usque）——Go 实现的 Cloudflare WARP / MASQUE 隧道核心；
+- usque-android（github.com/exxojay/usque-android）——其 mobile/ 包的 gomobile 绑定接口
+  设计被本应用用于进程内集成（注册 / 建隧道 / SOCKS5）。
+
+按 MIT 许可证要求，保留版权声明与许可文本如下：
 
 ---
 
@@ -9,6 +15,7 @@ The MIT License (MIT)
 =====================
 
 Copyright © 2025, github.com/Diniboy1123
+Copyright (c) 2026, 8DE4732A
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

@@ -1,9 +1,12 @@
-本应用内置的加密隧道组件适用以下开源许可：
+本应用内置的 VPN 加密隧道引擎基于以下 MIT 许可证的开源项目
+（usque / usque-android），以 JNI 方式编译进 APK、在应用进程内运行。
+其开源许可：
 
 The MIT License (MIT)
 =====================
 
 Copyright © 2025, github.com/Diniboy1123
+Copyright (c) 2026, 8DE4732A
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
