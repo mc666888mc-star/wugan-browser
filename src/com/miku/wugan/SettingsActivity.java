@@ -439,6 +439,22 @@ public class SettingsActivity extends Activity {
                 .append(alive != null ? alive : never).append("\n");
         sb.append(getString(R.string.a11y_diag_unbind)).append(": ")
                 .append(unbind != null ? unbind : never).append("\n");
+        // v10.2 遥测：挂件有没有被看到、点选有没有发生、点中没有
+        String widgetSeen = ChallengeTapService.formatTime(
+                ap.getLong(ChallengeTapService.KEY_LAST_WIDGET_SEEN, 0));
+        long tapTime = ap.getLong(ChallengeTapService.KEY_LAST_TAP_TIME, 0);
+        boolean tapOk = ap.getBoolean(ChallengeTapService.KEY_LAST_TAP_OK, false);
+        sb.append(getString(R.string.a11y_diag_widget)).append(": ")
+                .append(widgetSeen != null ? widgetSeen : never).append("\n");
+        sb.append(getString(R.string.a11y_diag_tap)).append(": ");
+        if (tapTime > 0) {
+            sb.append(ChallengeTapService.formatTime(tapTime))
+                    .append(tapOk ? getString(R.string.a11y_diag_ok)
+                            : getString(R.string.a11y_diag_fail));
+        } else {
+            sb.append(never);
+        }
+        sb.append("\n");
         sb.append(getString(R.string.a11y_diag_raw)).append(":\n")
                 .append(raw != null ? raw : "-");
 

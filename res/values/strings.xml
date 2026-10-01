@@ -180,4 +180,8 @@
     <string name="a11y_diag_yes">是</string>
     <string name="a11y_diag_no">否</string>
     <string name="a11y_diag_raw">原始名单</string>
+    <string name="a11y_diag_widget">验证挂件最后出现</string>
+    <string name="a11y_diag_tap">最后一次点选</string>
+    <string name="a11y_diag_ok">（成功）</string>
+    <string name="a11y_diag_fail">（失败）</string>
 </resources>

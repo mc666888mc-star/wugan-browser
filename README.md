@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v10.1（versionCode 16）
+- 当前版本 / Current version：v10.2（versionCode 17）
 - 开源协议 / License：GPLv3
 
 ---
@@ -75,6 +75,12 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v10.2（挂件级自动点选）
+
+- 自动点选加第二条独立路径：不再只问"整页是不是验证页"，直接找"验证标签 + 复选框"成对出现的验证挂件（专治注册页里那种内嵌式 Turnstile）。老路径原封不动，整页验证的效果不受影响
+- 只在挂件容器里挑最优的点：类名是 CheckBox 的优先，已勾选的不碰，容器外的复选框（如"订阅邮件"）不会误点
+- 诊断框加遥测：最后一次看到挂件的时间、最后一次点选的时间与成败，截图一眼定案
 
 #### v10.1（无障碍诊断）
 
@@ -218,6 +224,12 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v10.2 (widget-level auto-tap)
+
+- Auto-tap gains a second, independent path: instead of only asking "is this a challenge page", it now looks for a verification widget where a label ("Verify you are human" etc.) and a checkbox appear together — built for embedded Turnstile widgets like the one on sign-up pages. The old path is untouched, so full-page challenge handling is unaffected
+- Taps only the best candidate inside the widget container (CheckBox class preferred, checked boxes skipped); checkboxes outside the widget (e.g. marketing opt-ins) are never touched
+- Diagnostics dialog now shows telemetry: when a widget was last seen and when the last tap was attempted and whether it succeeded
 
 #### v10.1 (accessibility diagnostics)
 

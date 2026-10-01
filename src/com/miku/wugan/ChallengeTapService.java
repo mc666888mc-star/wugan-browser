@@ -8,7 +8,9 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -65,6 +67,25 @@ public class ChallengeTapService extends AccessibilityService {
     static final String A11Y_PREFS = "wugan_a11y";
     static final String KEY_LAST_CONNECT = "last_connect";
     static final String KEY_LAST_UNBIND = "last_unbind";
+    /** v10.2 遥测：最后一次看到验证挂件 / 最后一次点选时间与结果 */
+    static final String KEY_LAST_WIDGET_SEEN = "last_widget_seen";
+    static final String KEY_LAST_TAP_TIME = "last_tap_time";
+    static final String KEY_LAST_TAP_OK = "last_tap_ok";
+
+    /**
+     * v10.2 新路径（加法）：验证挂件的标签文字。
+     * 不问"整页是不是验证页"，标签 + 复选框成对出现才算遇到验证。
+     */
+    private static final String[] WIDGET_LABEL_HINTS = {
+            "请验证您是真人",
+            "验证您是真人",
+            "verify you are human",
+            "verifying you are human",
+            "我不是机器人",
+            "i'm not a robot",
+            "i am not a robot",
+            "确认您是真人"
+    };
 
     static String formatTime(long ms) {
         if (ms <= 0) {
@@ -113,8 +134,14 @@ public class ChallengeTapService extends AccessibilityService {
         }
         try {
             boolean challenge = containsChallenge(root);
+            boolean tapped = false;
             if (challenge && tapCooldownOk()) {
-                tapCheckbox(root, challenge);
+                tapped = tapCheckbox(root, challenge);
+            }
+            // v10.2 新路径（加法）：老路径没点中时，再试挂件级检测。
+            // 老代码一行未动，整页验证的效果不受影响。
+            if (!tapped && tapCooldownOk()) {
+                tapWidgetCheckbox(root);
             }
         } finally {
             root.recycle();
@@ -179,6 +206,152 @@ public class ChallengeTapService extends AccessibilityService {
     }
 
     /**
+     * v10.2 新路径（加法）：挂件级检测。
+     * 先找命中验证标签的节点，再从每个标签的祖先由近到远找复选框——
+     * 离标签最近、且含"可点未选中复选框"的那一层祖先就是挂件容器，
+     * 只在容器里挑最优的点，容器外的复选框（如"订阅邮件"）碰不到。
+     */
+    private boolean tapWidgetCheckbox(AccessibilityNodeInfo root) {
+        if (root == null) {
+            return false;
+        }
+        List<AccessibilityNodeInfo> labels = new ArrayList<>();
+        try {
+            collectLabelNodes(root, labels);
+            if (!labels.isEmpty()) {
+                // 遥测：看到挂件了（即使冷却中没点，也记下来，诊断框能看到）
+                getSharedPreferences(A11Y_PREFS, MODE_PRIVATE).edit()
+                        .putLong(KEY_LAST_WIDGET_SEEN, System.currentTimeMillis())
+                        .apply();
+            }
+            for (AccessibilityNodeInfo label : labels) {
+                if (tapNearestWidget(label)) {
+                    return true;
+                }
+            }
+        } finally {
+            for (AccessibilityNodeInfo l : labels) {
+                l.recycle();
+            }
+        }
+        return false;
+    }
+
+    /** 收集文本/无障碍描述命中挂件标签的节点（独立拷贝，调用方回收） */
+    private void collectLabelNodes(AccessibilityNodeInfo node, List<AccessibilityNodeInfo> out) {
+        if (node == null) {
+            return;
+        }
+        String hay = nodeText(node);
+        if (hay != null && containsAnyLower(hay, WIDGET_LABEL_HINTS)) {
+            out.add(AccessibilityNodeInfo.obtain(node));
+        }
+        int n = node.getChildCount();
+        for (int i = 0; i < n; i++) {
+            AccessibilityNodeInfo c = node.getChild(i);
+            collectLabelNodes(c, out);
+            if (c != null) {
+                c.recycle();
+            }
+        }
+    }
+
+    /** 从标签节点往上，由近到远找第一个含可点未选中复选框的祖先层，点最优的 */
+    private boolean tapNearestWidget(AccessibilityNodeInfo label) {
+        List<AccessibilityNodeInfo> chain = new ArrayList<>();
+        AccessibilityNodeInfo p = label.getParent();
+        try {
+            for (int up = 0; up < 4 && p != null; up++) {
+                AccessibilityNodeInfo next = p.getParent();
+                chain.add(p);
+                p = next;
+            }
+            if (p != null) {
+                p.recycle();
+            }
+            for (AccessibilityNodeInfo anc : chain) {
+                Cand best = findBestCheckbox(anc);
+                if (best.node != null) {
+                    lastTapMs = SystemClock.uptimeMillis();
+                    boolean ok = best.node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    Log.i(TAG, "widget auto-tap, score=" + best.score + " result=" + ok);
+                    getSharedPreferences(A11Y_PREFS, MODE_PRIVATE).edit()
+                            .putLong(KEY_LAST_TAP_TIME, System.currentTimeMillis())
+                            .putBoolean(KEY_LAST_TAP_OK, ok)
+                            .apply();
+                    best.node.recycle();
+                    return true;
+                }
+            }
+        } finally {
+            for (AccessibilityNodeInfo a : chain) {
+                a.recycle();
+            }
+        }
+        return false;
+    }
+
+    /** 候选节点（独立拷贝，调用方负责 recycle） */
+    private static class Cand {
+        AccessibilityNodeInfo node;
+        int score;
+    }
+
+    /**
+     * 在祖先子树里找最优复选框（先深后浅，同分取最深的）。
+     * 评分：3=类名是 CheckBox 的可点未选中框；2=自身文本就是验证标签的可点节点；
+     * 1=子树含验证标签的可点 wrapper。已选中的一律不要（避免把已勾选的框点掉）。
+     */
+    private Cand findBestCheckbox(AccessibilityNodeInfo scope) {
+        Cand best = new Cand();
+        findBestInto(scope, best);
+        return best;
+    }
+
+    private void findBestInto(AccessibilityNodeInfo node, Cand best) {
+        if (node == null || best.score >= 3) {
+            return;
+        }
+        int n = node.getChildCount();
+        for (int i = 0; i < n; i++) {
+            AccessibilityNodeInfo c = node.getChild(i);
+            findBestInto(c, best);
+            if (c != null) {
+                c.recycle();
+            }
+            if (best.score >= 3) {
+                return;
+            }
+        }
+        int s = scoreCheckboxNode(node);
+        if (s > best.score) {
+            if (best.node != null) {
+                best.node.recycle();
+            }
+            best.node = AccessibilityNodeInfo.obtain(node);
+            best.score = s;
+        }
+    }
+
+    private int scoreCheckboxNode(AccessibilityNodeInfo node) {
+        if (node == null || !node.isClickable() || node.isChecked()) {
+            return 0;
+        }
+        CharSequence cls = node.getClassName();
+        if (cls != null && cls.toString().contains("CheckBox")) {
+            return 3;
+        }
+        String hay = nodeText(node);
+        if (hay != null && containsAnyLower(hay, WIDGET_LABEL_HINTS)) {
+            return 2;
+        }
+        if (subtreeHasHint(node, 3, WIDGET_LABEL_HINTS)) {
+            return 1;
+        }
+        return 0;
+    }
+
+    /**
      * 可点节点判定：
      * (a) 自身文本/无障碍描述命中复选框关键词；或
      * (b) 可点节点子树里含复选框关键词（Turnstile 内嵌挂件把"请验证您是真人"放在
@@ -212,8 +385,13 @@ public class ChallengeTapService extends AccessibilityService {
         return false;
     }
 
-    /** 子树（限深）里有没有复选框关键词 */
+    /** 子树（限深）里有没有复选框关键词（老路径用） */
     private boolean subtreeHasHint(AccessibilityNodeInfo node, int depth) {
+        return subtreeHasHint(node, depth, CHECKBOX_HINTS);
+    }
+
+    /** 子树（限深）里有没有指定关键词（v10.2 新路径用挂件标签词） */
+    private boolean subtreeHasHint(AccessibilityNodeInfo node, int depth, String[] hints) {
         if (node == null || depth < 0) {
             return false;
         }
@@ -223,10 +401,10 @@ public class ChallengeTapService extends AccessibilityService {
             boolean found = false;
             if (child != null) {
                 String hay = nodeText(child);
-                if (hay != null && containsAnyLower(hay, CHECKBOX_HINTS)) {
+                if (hay != null && containsAnyLower(hay, hints)) {
                     found = true;
                 } else {
-                    found = subtreeHasHint(child, depth - 1);
+                    found = subtreeHasHint(child, depth - 1, hints);
                 }
                 child.recycle();
             }

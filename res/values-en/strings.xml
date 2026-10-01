@@ -180,4 +180,8 @@
     <string name="a11y_diag_yes">Yes</string>
     <string name="a11y_diag_no">No</string>
     <string name="a11y_diag_raw">Raw list</string>
+    <string name="a11y_diag_widget">Verification widget last seen</string>
+    <string name="a11y_diag_tap">Last tap attempt</string>
+    <string name="a11y_diag_ok"> (OK)</string>
+    <string name="a11y_diag_fail"> (failed)</string>
 </resources>
