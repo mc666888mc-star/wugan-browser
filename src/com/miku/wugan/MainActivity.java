@@ -3,16 +3,18 @@ package com.miku.wugan;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DownloadManager;
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.speech.tts.TextToSpeech;
@@ -683,13 +685,8 @@ public class MainActivity extends Activity {
                 new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         d.dismiss();
-                        try {
-                            startActivity(new Intent(
-                                    DownloadManager.ACTION_VIEW_DOWNLOADS));
-                        } catch (Exception e) {
-                            Toast.makeText(MainActivity.this, getString(R.string.cant_open_downloads),
-                                    Toast.LENGTH_SHORT).show();
-                        }
+                        startActivity(new Intent(MainActivity.this,
+                                DownloadActivity.class));
                     }
                 });
         addMenuItem(rowA, R.drawable.ic_settings, getString(R.string.menu_settings),
@@ -1306,30 +1303,30 @@ public class MainActivity extends Activity {
         cm.setAcceptCookie(true);
         cm.setAcceptThirdPartyCookies(webView, true);
 
-        // 下载：交给系统 DownloadManager，通知栏可见
+        // 下载：走内置下载器（Downloader），下载页看进度/速度/剩余时间
         webView.setDownloadListener(new DownloadListener() {
             @Override
             public void onDownloadStart(String url, String userAgent,
                                         String contentDisposition,
                                         String mimetype, long contentLength) {
-                try {
-                    DownloadManager.Request req =
-                            new DownloadManager.Request(Uri.parse(url));
-                    req.setNotificationVisibility(
-                            DownloadManager.Request
-                                    .VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                    String name = URLUtil.guessFileName(
-                            url, contentDisposition, mimetype);
-                    req.setTitle(name);
-                    DownloadManager dm = (DownloadManager)
-                            getSystemService(DOWNLOAD_SERVICE);
-                    dm.enqueue(req);
+                if (Build.VERSION.SDK_INT < 29
+                        && checkSelfPermission(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(MainActivity.this,
-                            getString(R.string.download_started, name), Toast.LENGTH_SHORT).show();
-                } catch (Exception e) {
-                    Toast.makeText(MainActivity.this,
-                            getString(R.string.download_failed), Toast.LENGTH_SHORT).show();
+                            getString(R.string.dl_need_perm),
+                            Toast.LENGTH_LONG).show();
+                    startActivity(new Intent(MainActivity.this,
+                            DownloadActivity.class));
+                    return;
                 }
+                Downloader.Task task =
+                        Downloader.get(MainActivity.this).enqueue(url);
+                Toast.makeText(MainActivity.this,
+                        getString(R.string.dl_enqueued, task.fileName),
+                        Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(MainActivity.this,
+                        DownloadActivity.class));
             }
         });
 

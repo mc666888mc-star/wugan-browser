@@ -1,9 +1,12 @@
 package com.miku.wugan;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -22,6 +25,7 @@ public class PlayerActivity extends Activity {
     private VideoView videoView;
     private Button rotateButton;
     private boolean landscape = false;
+    private String pendingDownloadUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +37,7 @@ public class PlayerActivity extends Activity {
 
         videoView = findViewById(R.id.video_view);
         rotateButton = findViewById(R.id.rotate_button);
+        Button downloadButton = findViewById(R.id.download_button);
 
         MediaController mc = new MediaController(this);
         mc.setAnchorView(videoView);
@@ -55,6 +60,22 @@ public class PlayerActivity extends Activity {
             finish();
             return;
         }
+        final String playUrl = url;
+        downloadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Build.VERSION.SDK_INT < 29
+                        && checkSelfPermission(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    pendingDownloadUrl = playUrl;
+                    requestPermissions(new String[]{
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE}, 9002);
+                    return;
+                }
+                enqueueDownload(playUrl);
+            }
+        });
         videoView.setVideoURI(Uri.parse(url));
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
@@ -70,6 +91,23 @@ public class PlayerActivity extends Activity {
                 return true;
             }
         });
+    }
+
+    private void enqueueDownload(String playUrl) {
+        Downloader.Task task = Downloader.get(this).enqueue(playUrl);
+        Toast.makeText(this, getString(R.string.dl_enqueued, task.fileName),
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] grantResults) {
+        if (requestCode == 9002 && pendingDownloadUrl != null
+                && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            enqueueDownload(pendingDownloadUrl);
+        }
+        pendingDownloadUrl = null;
     }
 
     @Override

@@ -142,4 +142,28 @@
     <string name="about">关于</string>
     <string name="clear_data">清除浏览数据</string>
     <string name="accessibility_description">自动点选 Cloudflare 人机验证复选框，省去手动点勾的时间</string>
+    <!-- 内置下载器 -->
+    <string name="dl_title">下载</string>
+    <string name="dl_empty">还没有下载任务\n在播放器里点「下载视频」开始下载</string>
+    <string name="dl_pause">暂停</string>
+    <string name="dl_resume">继续</string>
+    <string name="dl_cancel">取消</string>
+    <string name="dl_open">打开</string>
+    <string name="dl_delete">删除</string>
+    <string name="dl_retry">重试</string>
+    <string name="dl_waiting">等待中</string>
+    <string name="dl_paused">已暂停</string>
+    <string name="dl_done">已完成</string>
+    <string name="dl_canceled">已取消</string>
+    <string name="dl_failed">失败：%1$s</string>
+    <string name="dl_status_file">%1$d%% · %2$s · 还剩 %3$s</string>
+    <string name="dl_status_file_noeta">%1$d%% · %2$s</string>
+    <string name="dl_status_unknown">%1$s · %2$s</string>
+    <string name="dl_status_hls">分片 %1$d/%2$d · %3$s · 还剩 %4$s</string>
+    <string name="dl_status_hls_noeta">分片 %1$d/%2$d · %3$s</string>
+    <string name="dl_encrypted">加密视频流不支持下载</string>
+    <string name="dl_need_perm">需要存储权限才能下载，请先授权</string>
+    <string name="dl_enqueued">已加入下载：%1$s</string>
+    <string name="dl_no_app">没有能打开这个文件的应用</string>
+    <string name="download_video">下载视频</string>
 </resources>

@@ -2,11 +2,11 @@
 
 [中文版](#中文版) ｜ [English](#english-version)
 
-> 让 Cloudflare 验证尽量少弹、弹了也自动点掉的真内核浏览器。
-> A real-kernel browser that keeps Cloudflare challenges away — and auto-taps the ones that slip through.
+> 尽量减少 Cloudflare 验证打扰的真内核浏览器：稳定指纹 + 复用验证凭证，复选框式的验证页自动点一下。
+> A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v8.5（versionCode 13）
+- 当前版本 / Current version：v9.0（versionCode 14）
 - 开源协议 / License：GPLv3
 
 ---
@@ -27,6 +27,7 @@
 10. **视频嗅探 + 内置播放器**：被动嗅探页面中的直链视频（.mp4/.m3u8/.webm/.mov/.flv/.m4v），状态栏提示"点击播放"，进内置播放器（VideoView + MediaController，原生支持 HLS），一键横竖屏。
 11. **本地壁纸主页**：全离线壁纸库，可从相册选图、长按网页图片设为壁纸，支持轮换（v5/v7）。
 12. **中英双语**（v8.4）：英文系统全英文显示（Wugan Browser），中文系统不受影响，其他语言默认回退中文。
+13. **内置下载器**（v9）：多线程断点续传，下载页有进度条 + 实时速度 + 剩余时间，可暂停/继续/取消；支持直链 m3u8（分片自动合并）。播放器里有「下载视频」按钮。
 
 ⋯ 菜单：收藏夹 / 历史 / 共享 / 下载 / 设置 / 添加到收藏夹 / 桌面版网站 / 页内查找 / 大声朗读 / 新标签页 / 无痕新标签页 / 广告拦截开关 / 更新规则 / 下载此页面 / 添加至手机 / 退出浏览器 / 更换壁纸
 
@@ -74,6 +75,15 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v9.0（内置下载器）
+
+- 新下载引擎 `Downloader`：多线程（3 并发）+ 断点续传（`Range` 请求续写）+ 500ms 一次速度采样、2 秒滑窗算实时速度、ETA 剩余时间估算
+- 内置下载器页面：进度条 + 当前速度 + 剩余时间，支持暂停/继续/取消/重试；下载完可打开、也可删除文件
+- 普通文件（mp4、apk、zip 等）+ 直链 m3u8（下载分片自动合并成一个 ts 文件）；加密视频流（`EXT-X-KEY`）会明确提示不支持
+- 播放器右上角新增「下载视频」按钮；网页里的下载改走内置下载器（不再跳系统下载界面）
+- 下载保存到手机 Download 文件夹；新启动时崩溃中断的任务标为「已暂停」，可手动继续
+- 宣传措辞收敛：tagline 改为「尽量减少验证打扰」，如实说明机制（稳定指纹 + 复用验证凭证 + 复选框式自动点选）
 
 #### v8.5（两个 bug 修复）
 
@@ -148,6 +158,7 @@ GPLv3（见 `LICENSE` 文件）。
 10. **Video sniffing + built-in player**: passively sniffs direct video links (.mp4/.m3u8/.webm/.mov/.flv/.m4v), status-bar prompt to play, built-in player (VideoView + MediaController, native HLS), one-tap landscape/portrait.
 11. **Local wallpaper home**: fully offline wallpaper library — pick from gallery, long-press any web image to set as wallpaper, rotation supported (v5/v7).
 12. **Bilingual** (v8.4): full English UI on English-system devices (as "Wugan Browser"); Chinese elsewhere.
+13. **Built-in downloader** (v9): multi-threaded with resume; downloads page shows progress bar + live speed + ETA, with pause/resume/cancel; direct m3u8 links get their segments auto-merged. The player has a "Download video" button.
 
 ⋯ menu: Bookmarks / History / Share / Downloads / Settings / Add to bookmarks / Desktop site / Find in page / Read aloud / New tab / New incognito tab / Ad blocker toggle / Update rules / Save page / Add to home screen / Exit / Change wallpaper
 
@@ -195,6 +206,15 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v9.0 (built-in downloader)
+
+- New download engine `Downloader`: 3-thread pool, resumable downloads (Range requests), 500 ms speed sampling with a 2 s sliding window and ETA estimation
+- New downloads page: progress bar + live speed + ETA, with pause/resume/cancel/retry; finished files can be opened or deleted
+- Regular files (mp4, apk, zip, …) and direct m3u8 links (segments auto-merged into one ts file); encrypted streams (`EXT-X-KEY`) fail with an explicit "not supported" message
+- New "Download video" button in the player; in-page downloads now go through the built-in downloader instead of the system download UI
+- Files land in the phone's Download folder; tasks interrupted by a crash are marked "Paused" on next launch and can be resumed
+- Marketing copy toned down: the tagline now says "minimize interruptions", describing the real mechanisms (consistent fingerprint, reused clearance cookies, checkbox auto-tap)
 
 #### v8.5 (two bug fixes)
 

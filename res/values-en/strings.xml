@@ -142,4 +142,28 @@
     <string name="about">About</string>
     <string name="clear_data">Clear browsing data</string>
     <string name="accessibility_description">Automatically taps Cloudflare human-verification checkboxes so you don\'t have to.</string>
+    <!-- Built-in downloader -->
+    <string name="dl_title">Downloads</string>
+    <string name="dl_empty">No downloads yet\nTap "Download video" in the player to start</string>
+    <string name="dl_pause">Pause</string>
+    <string name="dl_resume">Resume</string>
+    <string name="dl_cancel">Cancel</string>
+    <string name="dl_open">Open</string>
+    <string name="dl_delete">Delete</string>
+    <string name="dl_retry">Retry</string>
+    <string name="dl_waiting">Waiting</string>
+    <string name="dl_paused">Paused</string>
+    <string name="dl_done">Done</string>
+    <string name="dl_canceled">Canceled</string>
+    <string name="dl_failed">Failed: %1$s</string>
+    <string name="dl_status_file">%1$d%% · %2$s · %3$s left</string>
+    <string name="dl_status_file_noeta">%1$d%% · %2$s</string>
+    <string name="dl_status_unknown">%1$s · %2$s</string>
+    <string name="dl_status_hls">Segment %1$d/%2$d · %3$s · %4$s left</string>
+    <string name="dl_status_hls_noeta">Segment %1$d/%2$d · %3$s</string>
+    <string name="dl_encrypted">Encrypted streams can\'t be downloaded</string>
+    <string name="dl_need_perm">Storage permission is required to download</string>
+    <string name="dl_enqueued">Added to downloads: %1$s</string>
+    <string name="dl_no_app">No app can open this file</string>
+    <string name="download_video">Download video</string>
 </resources>
