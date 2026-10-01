@@ -1,58 +1,37 @@
 package com.miku.wugan;
 
 import android.content.Context;
-import android.os.SystemClock;
+import android.content.Intent;
+import android.net.VpnService;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.Socket;
 
 import mobile.Mobile;
-import mobile.TunnelController;
 
 /**
- * v12.1 内置 VPN（引擎换血）。
+ * v13.0 内置 VPN 唯一入口。
  *
- * v12.0 试图用 ProcessBuilder 跑外置二进制，在真机上直接 "Cannot run program" 暴毙。
- * v12.1 改走验证过的路子：gomobile 把隧道引擎编进 APK，进程内 JNI 调用，
- * 一次 exec 都没有。注册→建隧道→127.0.0.1:1080 开 SOCKS5，浏览器流量经它走。
+ * v12.x 是"应用内 SOCKS5"（只有浏览器流量走隧道，WebRTC/DNS 照样泄漏），
+ * v13 起走系统级 VPN：VpnService + TUN，手机所有流量都进 WARP 隧道。
+ * 注册逻辑不变（Mobile.registerAccount/enrollDevice），连接/断开改走
+ * VpnTunnelService。旧的 startSocks 应用内代理路径已删。
  *
- * 对外接口不变：是否已注册 / 一键注册 / 连接 / 断开 / 状态。
+ * 对外接口：是否已注册 / 一键注册 / 起服务（可能需系统授权）/ 断开 / 状态。
  * （引擎来源与许可：见 NOTICES.md）
  */
 public class VpnManager {
 
     private static final String CFG_NAME = "tunnel.json";
-    public static final int PORT = 1080;
-    public static final String HOST = "127.0.0.1";
 
-    private static TunnelController ctl;
-    private static final Object LOCK = new Object();
-
-    /** 给 HttpURLConnection 用的 SOCKS5 代理 */
-    public static Proxy proxy() {
-        return new Proxy(Proxy.Type.SOCKS,
-                new InetSocketAddress(HOST, PORT));
-    }
+    /** startService 的返回值：需要走系统 VPN 授权流程 */
+    public static final String NEED_AUTH = "NEED_AUTH";
 
     public static boolean isOn() {
-        synchronized (LOCK) {
-            if (ctl == null) {
-                return false;
-            }
-            try {
-                String s = ctl.getStatus();
-                return "connecting".equals(s) || "connected".equals(s)
-                        || "reconnecting".equals(s);
-            } catch (Throwable t) {
-                return false;
-            }
-        }
+        return VpnTunnelService.isRunning();
     }
 
     public static boolean isRegistered(Context c) {
@@ -64,7 +43,8 @@ public class VpnManager {
         return new File(c.getFilesDir(), CFG_NAME);
     }
 
-    private static String readCfg(Context c) {
+    /** 包内可见：VpnTunnelService 读配置用 */
+    static String readCfg(Context c) {
         File f = cfgFile(c);
         InputStream in = null;
         try {
@@ -127,150 +107,39 @@ public class VpnManager {
     }
 
     /**
-     * 连接：起隧道并做端到端 SOCKS 探针，确认真流量能走。
-     * QUIC 不通自动改 HTTP2（TCP）再试一次（后台线程调）。
-     * 返回 null=成功，否则为错误信息。
+     * 起系统 VPN 服务（主线程调即可，内部无阻塞网络操作）。
+     * 返回 null=服务已起；NEED_AUTH=需系统授权，调用方拿 authIntent()
+     * 去 startActivityForResult；否则为错误信息。
      */
-    public static String connect(Context c) {
-        synchronized (LOCK) {
-            if (isOn()) {
-                return null;
-            }
-            String cfg = readCfg(c);
-            if (cfg == null) {
-                return "no config";
-            }
-            String err = startTunnel(cfg, false);
-            if (err != null) {
-                err = startTunnel(cfg, true);
-            }
-            return err;
-        }
-    }
-
-    private static String startTunnel(String configJson, boolean http2) {
-        final TunnelController t;
+    public static String startService(Context c) {
         try {
-            t = Mobile.newTunnelController();
-        } catch (Throwable th) {
-            return "engine: " + shortErr(th);
-        }
-        synchronized (LOCK) {
-            ctl = t;
-        }
-        // startSocks 是阻塞调用，丢后台线程跑
-        Thread worker = new Thread(new Runnable() {
-            @Override public void run() {
-                try {
-                    t.startSocks(configJson, HOST + ":" + PORT,
-                            "", "", 1280L, false, http2, null);
-                } catch (Throwable ignored) {
-                    // stop() 会让它返回，错误由主流程的探针判定
-                } finally {
-                    synchronized (LOCK) {
-                        if (ctl == t) {
-                            ctl = null;
-                        }
-                    }
-                }
+            if (VpnService.prepare(c) != null) {
+                return NEED_AUTH;
             }
-        });
-        worker.setDaemon(true);
-        worker.start();
-
-        if (!waitPort(15000)) {
-            stopCtl(t);
-            return "timeout";
+            Intent i = new Intent(c, VpnTunnelService.class);
+            c.startForegroundService(i);
+            return null;
+        } catch (Throwable t) {
+            return shortErr(t);
         }
-        // 端口开了不代表隧道通了：经 SOCKS5 真连一次 1.1.1.1:443，走完全程才算
-        if (!socksProbe(12000)) {
-            stopCtl(t);
-            return http2 ? "probe failed" : "quic blocked";
-        }
-        return null;
     }
 
-    private static void stopCtl(TunnelController t) {
+    /** 系统 VPN 授权弹框的 Intent（startService 返回 NEED_AUTH 时用） */
+    public static Intent authIntent(Context c) {
         try {
-            t.stop();
-        } catch (Throwable ignored) {}
-        synchronized (LOCK) {
-            if (ctl == t) {
-                ctl = null;
-            }
+            return VpnService.prepare(c);
+        } catch (Throwable t) {
+            return null;
         }
     }
 
-    public static void disconnect() {
-        synchronized (LOCK) {
-            if (ctl != null) {
-                try {
-                    ctl.stop();
-                } catch (Throwable ignored) {}
-                ctl = null;
-            }
-        }
-    }
-
-    private static boolean waitPort(long ms) {
-        long deadline = SystemClock.elapsedRealtime() + ms;
-        while (SystemClock.elapsedRealtime() < deadline) {
-            Socket s = null;
-            try {
-                s = new Socket();
-                s.connect(new InetSocketAddress(HOST, PORT), 800);
-                return true;
-            } catch (Exception ignored) {
-            } finally {
-                if (s != null) try { s.close(); } catch (Exception ignored) {}
-            }
-            SystemClock.sleep(300);
-        }
-        return false;
-    }
-
-    /**
-     * SOCKS5 握手 + CONNECT 1.1.1.1:443。
-     * 1.1.1.1 是 Cloudflare 自己的 IP，无需 DNS、经隧道一定可达，
-     * 连上即证明整条隧道是通的。
-     */
-    private static boolean socksProbe(long ms) {
-        Socket s = null;
+    /** 断开：给服务发 ACTION_STOP，优雅停隧道 */
+    public static void disconnect(Context c) {
         try {
-            s = new Socket();
-            s.connect(new InetSocketAddress(HOST, PORT), 5000);
-            s.setSoTimeout((int) ms);
-            OutputStream out = s.getOutputStream();
-            InputStream in = s.getInputStream();
-            out.write(new byte[]{0x05, 0x01, 0x00}); // VER, 1 种方法, 无需认证
-            out.flush();
-            byte[] b = new byte[2];
-            readFully(in, b, 2);
-            if (b[0] != 0x05 || b[1] != 0x00) {
-                return false;
-            }
-            // CONNECT 1.1.1.1:443
-            out.write(new byte[]{0x05, 0x01, 0x00, 0x01,
-                    0x01, 0x01, 0x01, 0x01, 0x01, (byte) 0xBB});
-            out.flush();
-            byte[] r = new byte[10];
-            readFully(in, r, 10);
-            return r[0] == 0x05 && r[1] == 0x00;
-        } catch (Exception e) {
-            return false;
-        } finally {
-            if (s != null) try { s.close(); } catch (Exception ignored) {}
-        }
-    }
-
-    private static void readFully(InputStream in, byte[] b, int len) throws Exception {
-        int off = 0;
-        while (off < len) {
-            int n = in.read(b, off, len - off);
-            if (n < 0) {
-                throw new Exception("eof");
-            }
-            off += n;
+            Intent i = new Intent(c, VpnTunnelService.class);
+            i.setAction(VpnTunnelService.ACTION_STOP);
+            c.startService(i);
+        } catch (Throwable ignored) {
         }
     }
 }

@@ -445,6 +445,18 @@
                 android:text="@string/vpn_connect" />
         </LinearLayout>
 
+        <!-- v13.0：系统级 VPN 说明 -->
+        <TextView
+            android:id="@+id/vpn_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="32dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="12dp"
+            android:text="@string/vpn_desc"
+            android:textColor="#888888"
+            android:textSize="12sp" />
+
         <!-- v10.4：一键直达系统设置，少走弯路 -->
         <LinearLayout
             android:id="@+id/appinfo_row"

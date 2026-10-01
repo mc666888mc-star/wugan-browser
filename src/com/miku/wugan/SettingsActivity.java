@@ -39,6 +39,7 @@ public class SettingsActivity extends Activity {
             "https://someonewhocares.org/hosts/zero/hosts";
 
     private static final int REQUEST_WALLPAPER = 1001;
+    private static final int REQUEST_VPN_AUTH = 1002;
 
     private SharedPreferences prefs;
     private HistoryDbHelper historyDb;
@@ -243,10 +244,10 @@ public class SettingsActivity extends Activity {
         vpnButton.setEnabled(true);
     }
 
-    /** 一键开启 / 断开。注册+连接都在后台线程做，按钮先禁用防连点 */
+    /** 一键开启 / 断开。注册在后台线程做，起服务可能需要系统 VPN 授权 */
     private void toggleVpn() {
         if (VpnManager.isOn()) {
-            VpnManager.disconnect();
+            VpnManager.disconnect(this);
             refreshVpnStatus();
             return;
         }
@@ -267,7 +268,7 @@ public class SettingsActivity extends Activity {
                                     getString(R.string.vpn_connecting));
                         }
                     });
-                    err = VpnManager.connect(SettingsActivity.this);
+                    err = VpnManager.startService(SettingsActivity.this);
                 }
                 final String msg = err;
                 vpnStatus.post(new Runnable() {
@@ -275,6 +276,17 @@ public class SettingsActivity extends Activity {
                     public void run() {
                         if (msg == null) {
                             refreshVpnStatus();
+                        } else if (VpnManager.NEED_AUTH.equals(msg)) {
+                            // 系统 VPN 授权：弹系统对话框，点了允许再起服务
+                            Intent auth = VpnManager.authIntent(
+                                    SettingsActivity.this);
+                            if (auth != null) {
+                                startActivityForResult(auth,
+                                        REQUEST_VPN_AUTH);
+                            } else {
+                                vpnButton.setEnabled(true);
+                                vpnStatus.setText(getString(R.string.vpn_off));
+                            }
                         } else {
                             vpnButton.setEnabled(true);
                             vpnStatus.setText(getString(R.string.vpn_off));
@@ -433,6 +445,23 @@ public class SettingsActivity extends Activity {
                     });
                 }
             }).start();
+        }
+        // v13.0：系统 VPN 授权回调。点了允许 → prepare 已通过，直接起服务；
+        // 拒绝 → toast 提示，按钮恢复。
+        if (requestCode == REQUEST_VPN_AUTH) {
+            if (resultCode == RESULT_OK) {
+                String err = VpnManager.startService(this);
+                if (err != null) {
+                    Toast.makeText(this,
+                            getString(R.string.vpn_conn_fail) + " (" + err + ")",
+                            Toast.LENGTH_LONG).show();
+                }
+            } else {
+                Toast.makeText(this, getString(R.string.vpn_auth_denied),
+                        Toast.LENGTH_LONG).show();
+            }
+            vpnButton.setEnabled(true);
+            refreshVpnStatus();
         }
     }
 

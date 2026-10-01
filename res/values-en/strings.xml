@@ -169,15 +169,17 @@
     <string name="player_lock">Lock</string>
     <string name="player_unlock">Unlock</string>
     <!-- Accessibility diagnostics -->
-    <string name="section_vpn">VPN (built-in)</string>
+    <string name="section_vpn">VPN (system-level)</string>
     <string name="vpn_title">Encrypted tunnel</string>
+    <string name="vpn_desc">When on, traffic from all apps (incl. DNS) goes through the encrypted tunnel; a key icon appears in the status bar</string>
     <string name="vpn_off">Not connected</string>
     <string name="vpn_connecting">Connecting…</string>
     <string name="vpn_registering">Registering account…</string>
-    <string name="vpn_on">Connected ✓ (browser traffic via encrypted tunnel)</string>
+    <string name="vpn_on">Connected ✓ (system VPN, all traffic via tunnel)</string>
     <string name="vpn_connect">Connect</string>
     <string name="vpn_disconnect">Disconnect</string>
     <string name="vpn_reg_fail">Registration failed, try another network</string>
     <string name="vpn_conn_fail">Connection failed, try again later</string>
+    <string name="vpn_auth_denied">VPN permission denied</string>
     <string name="licenses_title">Open-source licenses</string>
 </resources>

@@ -1424,11 +1424,7 @@ public class MainActivity extends Activity {
                 }
                 // 2) 被动嗅探视频资源（只看 URL，不影响返回）
                 sniffVideoUrl(uri.toString());
-                // 3) v12.0：VPN 开启时 GET 请求经加密隧道（返回 null 则 WebView 直连）
-                WebResourceResponse proxied = VpnFetch.fetch(request);
-                if (proxied != null) {
-                    return proxied;
-                }
+                // 3) v13.0：系统级 VPN 下 WebView 直连即进隧道，不再经应用内 SOCKS
                 return null;
             }
 

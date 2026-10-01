@@ -6,7 +6,7 @@
 > A clean, real-kernel browser with built-in VPN: one-tap encrypted tunnel, consistent fingerprint, reused clearance cookies, native access to the open internet.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v12.1（versionCode 29）
+- 当前版本 / Current version：v13.0（versionCode 30）
 - 开源协议 / License：GPLv3
 
 ---
@@ -79,6 +79,19 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v13.0（系统级 VPN：VpnService + TUN）
+
+- **从"应用内 SOCKS5"升级为系统级 VPN**：v12.x 只有浏览器自己的流量走隧道，WebRTC、
+  DNS、其他 App 的流量全部直连（ipleak 实测泄漏）。v13 建 TUN 接口，手机所有 IP 流量
+  （含 DNS，走 1.1.1.1）都进 WARP 隧道，状态栏显示钥匙图标。
+- **常驻通知**：实时上行/下行速率（TrafficStats 统计的隧道实际吞吐）+ 当前协议
+  （H3/QUIC 或 H2），每 2 秒刷新；通知带"断开"按钮，点主体回到设置页。
+- **连接策略**：先 QUIC/H3，15 秒连不上或报 error 自动换 HTTP2（TCP）重试一次；
+  endpoint 的 /32 从路由中抠掉防环路（QUIC 与 H2 的 endpoint 都抠）。
+- 删掉旧的应用内 SOCKS 接线（VpnFetch 与下载器/ WebView 的代理代码），系统 VPN 下
+  直连即进隧道。零信任暂不做（v13.1 再做）。
+- MIT 署名见 `NOTICES.md` 与设置页「关于 → 开源许可」。
 
 #### v12.1（VPN 引擎换血：exec 改 JNI）
 
@@ -287,6 +300,13 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v13.0 (system-level VPN: VpnService + TUN)
+
+- Upgraded from in-app SOCKS5 to a system VPN: a TUN interface carries **all** device IP traffic (incl. DNS via 1.1.1.1) through the WARP tunnel — no more WebRTC/DNS leaks; a key icon shows in the status bar
+- Persistent notification: live up/down speeds (actual tunnel throughput from TrafficStats) + current protocol (H3/QUIC or H2), refreshed every 2s; "Disconnect" action included, tapping the notification returns to Settings
+- Connect strategy: QUIC/H3 first, auto-retries once over HTTP2 (TCP) after 15s timeout or error; both QUIC and H2 endpoints are excluded (/32) from routes to avoid loops
+- Old in-app SOCKS wiring (VpnFetch, proxy code in WebView/downloader) removed — with a system VPN, direct connections go through the tunnel. Zero Trust deferred to v13.1
 
 #### v11.3 (removed the extra guide dialog)
 

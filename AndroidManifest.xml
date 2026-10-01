@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.miku.wugan"
-    android:versionCode="29"
-    android:versionName="12.1">
+    android:versionCode="30"
+    android:versionName="13.0">
 
     <uses-sdk
         android:minSdkVersion="26"
@@ -16,6 +16,9 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- v10.8：下载进度/完成通知（13+ 需运行时申请） -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- v13.0：系统级 VPN 前台服务（通知栏常驻速率显示） -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:label="@string/app_name"
@@ -72,6 +75,20 @@
         <activity
             android:name=".DownloadActivity"
             android:exported="false" />
+
+        <!-- v13.0：系统级 VPN（VpnService + TUN，全部流量走 WARP 隧道） -->
+        <service
+            android:name=".VpnTunnelService"
+            android:exported="false"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:foregroundServiceType="specialUse">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="系统级加密隧道（WARP），承载手机全部网络流量" />
+        </service>
 
         <!-- v12.0：自动点选服务已砍掉（留出最纯净的壳子），此处不再声明无障碍服务 -->
 

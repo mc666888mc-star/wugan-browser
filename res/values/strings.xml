@@ -191,15 +191,17 @@
     <string name="player_speed">倍速</string>
     <string name="player_pip">画中画</string>
     <string name="pip_failed">当前设备不支持画中画</string>
-    <string name="section_vpn">VPN（内置）</string>
+    <string name="section_vpn">VPN（系统级）</string>
     <string name="vpn_title">加密隧道</string>
+    <string name="vpn_desc">开启后手机所有应用流量（含 DNS）都走加密隧道，状态栏显示钥匙图标</string>
     <string name="vpn_off">未连接</string>
     <string name="vpn_connecting">连接中…</string>
     <string name="vpn_registering">正在注册账号…</string>
-    <string name="vpn_on">已连接 ✓（浏览器流量经加密隧道）</string>
+    <string name="vpn_on">已连接 ✓（系统级 VPN，全部流量走隧道）</string>
     <string name="vpn_connect">一键开启</string>
     <string name="vpn_disconnect">断开</string>
     <string name="vpn_reg_fail">注册失败，换个网络再试</string>
     <string name="vpn_conn_fail">连接失败，稍后再试</string>
+    <string name="vpn_auth_denied">未获得 VPN 授权，开启失败</string>
     <string name="licenses_title">开源许可</string>
 </resources>
