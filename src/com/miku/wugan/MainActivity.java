@@ -1385,6 +1385,8 @@ public class MainActivity extends Activity {
                 Downloader.Task task =
                         Downloader.get(MainActivity.this).enqueue(
                                 url, contentDisposition, mimetype);
+                // v10.8：下载通知权限（就地申请一次，拒绝也不影响下载）
+                DownloadNotifier.ensurePermission(MainActivity.this);
                 Toast.makeText(MainActivity.this,
                         getString(R.string.dl_enqueued, task.fileName),
                         Toast.LENGTH_SHORT).show();

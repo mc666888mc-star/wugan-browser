@@ -139,6 +139,14 @@
     <!-- v10.7：电池优化白名单实时状态 -->
     <string name="battery_allowed">已允许后台运行 ✓（点我可改）</string>
     <string name="battery_not_allowed">还没允许后台运行，点我去允许</string>
+    <!-- v10.8：下载通知 -->
+    <string name="notif_ch_downloads">下载</string>
+    <string name="notif_ch_downloads_desc">显示下载进度与完成提醒</string>
+    <string name="notif_downloading">下载中</string>
+    <string name="notif_paused">已暂停，点我继续</string>
+    <string name="notif_done">下载完成</string>
+    <string name="notif_done_hint">点我打开文件</string>
+    <string name="notif_failed_hint">下载失败，点我去重试</string>
     <string name="a11y_off">状态：未开启（自动点选不工作）</string>
     <string name="addr_top">顶部 ›</string>
     <string name="addr_bottom">底部 ›</string>

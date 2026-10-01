@@ -220,6 +220,8 @@ public class PlayerActivity extends Activity {
 
     private void enqueueDownload(String playUrl) {
         Downloader.Task task = Downloader.get(this).enqueue(playUrl);
+        // v10.8：下载通知权限（就地申请一次，拒绝也不影响下载）
+        DownloadNotifier.ensurePermission(this);
         Toast.makeText(this, getString(R.string.dl_enqueued, task.fileName),
                 Toast.LENGTH_SHORT).show();
     }

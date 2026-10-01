@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v10.7（versionCode 22）
+- 当前版本 / Current version：v10.8（versionCode 23）
 - 开源协议 / License：GPLv3
 
 ---
@@ -75,6 +75,11 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v10.8（下载通知）
+
+- 下载有了系统通知：进度条（1s/3% 节流，不轰炸通知栏）/ 完成点开直接看文件 / 失败点进去重试 / 暂停显示"已暂停"
+- 补声明 `POST_NOTIFICATIONS`；Android 13+ 第一次点下载时就地申请一次，拒绝也不纠缠——下载照常用，只是不弹通知
 
 #### v10.7（默认浏览器身份 + 电池一键允许）
 
@@ -256,6 +261,11 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v10.8 (download notifications)
+
+- Downloads now post system notifications: progress bar (throttled to 1s/3% so it doesn't spam) / tap a finished one to open the file / tap a failed one to retry / paused shows "paused"
+- Declared `POST_NOTIFICATIONS`; on Android 13+ it's requested once in context at first download — decline and downloads still work, just silently
 
 #### v10.7 (default-browser identity + one-tap battery allow)
 

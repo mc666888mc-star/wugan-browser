@@ -92,9 +92,12 @@ public class Downloader {
     private final Context appCtx;
     private final ExecutorService pool = Executors.newFixedThreadPool(3);
     private final CopyOnWriteArrayList<Task> tasks = new CopyOnWriteArrayList<Task>();
+    /** v10.8：下载通知（进度/完成/失败），没权限就静默不发 */
+    private final DownloadNotifier notifier;
 
     private Downloader(Context appCtx) {
         this.appCtx = appCtx;
+        this.notifier = new DownloadNotifier(appCtx);
     }
 
     public List<Task> tasks() {
@@ -166,6 +169,7 @@ public class Downloader {
         if (t.state == Task.State.DONE) {
             deleteTarget(t);
             tasks.remove(t);
+            notifier.dismiss(t);
             return;
         }
         t.cancelReq = true;
@@ -245,6 +249,7 @@ public class Downloader {
             }
             t.state = Task.State.DOWNLOADING;
             t.startMs = SystemClock.uptimeMillis();
+            notifier.onProgress(t);
             try {
                 if (t.hls) {
                     downloadHls();
@@ -254,18 +259,22 @@ public class Downloader {
                 if (t.cancelReq) {
                     deleteTarget(t);
                     removeTask(t);
+                    notifier.dismiss(t);
                 } else {
                     t.state = Task.State.DONE;
                     t.speedBps = 0;
+                    notifier.onDone(t);
                 }
             } catch (PauseSignal e) {
                 t.state = Task.State.PAUSED;
                 t.speedBps = 0;
+                notifier.onProgress(t);
             } catch (Exception e) {
                 Log.w(TAG, "download failed: " + t.url, e);
                 t.state = Task.State.FAILED;
                 t.error = e.getMessage() != null ? e.getMessage() : e.toString();
                 t.speedBps = 0;
+                notifier.onFailed(t);
             }
         }
 
@@ -352,6 +361,7 @@ public class Downloader {
                     t.doneBytes += n;
                     speedo.add(n);
                     t.speedBps = speedo.bps();
+                    notifier.onProgress(t);
                 }
                 out.flush();
             } finally {
@@ -419,6 +429,7 @@ public class Downloader {
                 t.doneBytes += data.length;
                 speedo.add(data.length);
                 t.speedBps = speedo.bps();
+                notifier.onProgress(t);
             }
             checkPoint();
             if (mediaStore) {
