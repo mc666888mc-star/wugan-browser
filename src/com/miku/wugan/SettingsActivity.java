@@ -50,6 +50,7 @@ public class SettingsActivity extends Activity {
     private TextView addrPosValue;
     private TextView engineValue;
     private TextView wallpaperCountValue;
+    private TextView batterySub;
     private Switch rotateSwitch;
 
     @Override
@@ -63,6 +64,7 @@ public class SettingsActivity extends Activity {
         addrPosValue = findViewById(R.id.addr_pos_value);
         engineValue = findViewById(R.id.engine_value);
         wallpaperCountValue = findViewById(R.id.wallpaper_count_value);
+        batterySub = findViewById(R.id.battery_sub);
 
         // ---- 外观和布局：地址栏位置 ----
         findViewById(R.id.addr_pos_row).setOnClickListener(new View.OnClickListener() {
@@ -192,14 +194,22 @@ public class SettingsActivity extends Activity {
         findViewById(R.id.battery_row).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 电池优化页：允许后台活动，防止服务被系统杀掉
+                // v10.7：直接弹系统"允许后台运行"对话框，点一下就行，
+                // 不用再去电池优化大列表里翻找本应用
                 try {
-                    startActivity(new Intent(
-                            Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+                    Intent i = new Intent(
+                            Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                    i.setData(Uri.parse("package:" + getPackageName()));
+                    startActivity(i);
                 } catch (Exception e) {
-                    Toast.makeText(SettingsActivity.this,
-                            getString(R.string.cant_open_settings),
-                            Toast.LENGTH_SHORT).show();
+                    try {
+                        startActivity(new Intent(
+                                Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+                    } catch (Exception e2) {
+                        Toast.makeText(SettingsActivity.this,
+                                getString(R.string.cant_open_settings),
+                                Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
@@ -263,6 +273,20 @@ public class SettingsActivity extends Activity {
         engineValue.setText(name + " ›");
         int n = WallpaperManager.list(this).length;
         wallpaperCountValue.setText(getString(R.string.wallpaper_count, n));
+        // v10.7：电池优化白名单状态（回来自动刷新，onResume 会调这里）
+        if (batterySub != null) {
+            boolean ignoring = false;
+            try {
+                android.os.PowerManager pm =
+                        (android.os.PowerManager) getSystemService(POWER_SERVICE);
+                ignoring = pm != null
+                        && pm.isIgnoringBatteryOptimizations(getPackageName());
+            } catch (Exception e) {
+                ignoring = false;
+            }
+            batterySub.setText(getString(ignoring
+                    ? R.string.battery_allowed : R.string.battery_not_allowed));
+        }
         if (rotateSwitch != null) {
             rotateSwitch.setChecked(WallpaperManager.isRotate(this));
         }

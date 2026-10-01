@@ -176,6 +176,10 @@ public class MainActivity extends Activity {
             String extra = intent.getStringExtra("url");
             if (extra != null && !extra.isEmpty()) {
                 startUrl = extra;
+            } else if (Intent.ACTION_VIEW.equals(intent.getAction())
+                    && intent.getData() != null) {
+                // v10.7：外部/默认浏览器调起（VIEW + http/https）
+                startUrl = intent.getData().toString();
             }
         }
         tabs.add(new Tab(startUrl, false));
@@ -189,6 +193,12 @@ public class MainActivity extends Activity {
         super.onNewIntent(intent);
         setIntent(intent);
         String url = intent.getStringExtra("url");
+        if ((url == null || url.isEmpty())
+                && Intent.ACTION_VIEW.equals(intent.getAction())
+                && intent.getData() != null) {
+            // v10.7：外部链接调起（已设为默认浏览器时）
+            url = intent.getData().toString();
+        }
         if (url != null && !url.isEmpty()) {
             loadInCurrentTab(url);
         }

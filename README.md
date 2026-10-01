@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v10.6（versionCode 21）
+- 当前版本 / Current version：v10.7（versionCode 22）
 - 开源协议 / License：GPLv3
 
 ---
@@ -75,6 +75,12 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v10.7（默认浏览器身份 + 电池一键允许）
+
+- 修"系统默认浏览器列表读不出我们"：根因是 Manifest 里没声明浏览器身份（VIEW + BROWSABLE + http/https）。现在声明了，会出现在系统默认浏览器候选里；外部链接点我们也能正确接住并打开（MainActivity 改 singleTask，复用窗口不叠罗汉）
+- 「电池优化」改直达授权：不再跳那个翻半天找不到的大列表，直接弹系统对话框"允许后台运行？"，点一下允许就行；设置页实时显示"已允许 ✓ / 还没允许"，回来自动刷新
+- 补声明 `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` 权限（就是上面那个对话框要的）；下载器不发系统通知，`POST_NOTIFICATIONS` 不需要，没加
 
 #### v10.6（受限制设置三步指引）
 
@@ -250,6 +256,12 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v10.7 (default-browser identity + one-tap battery allow)
+
+- Fixed "system default-browser list doesn't show us": the manifest never declared browser identity (VIEW + BROWSABLE + http/https). It's declared now, so we appear in the system's default-browser candidates; tapping a link elsewhere opens it in our window too (MainActivity is now singleTask — reuses the window instead of stacking)
+- "Battery optimization" now goes straight to authorization: no more hunting through the giant list — a system dialog asks "allow background activity?", one tap and done; the settings page shows live status ("allowed ✓ / not yet") and refreshes on return
+- Declared `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` (required for that dialog); the downloader posts no system notifications so `POST_NOTIFICATIONS` wasn't added
 
 #### v10.6 (restricted-settings 3-step guide)
 

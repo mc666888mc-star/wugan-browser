@@ -135,7 +135,10 @@
     <string name="restricted_guide_msg">跳过去之后，按这三步点：\n\n1. 点右上角 ⋮（三个点）\n2. 点「允许受限制的设置」\n3. 点「允许」\n\n开完直接返回，这里的状态会自动刷新。</string>
     <string name="restricted_guide_go">去开</string>
     <string name="jump_battery_title">电池优化</string>
-    <string name="jump_battery_sub">一键直达 → 允许后台活动，防止服务被系统杀掉</string>
+    <string name="jump_battery_sub">点我直接允许后台运行，防止服务被系统杀掉</string>
+    <!-- v10.7：电池优化白名单实时状态 -->
+    <string name="battery_allowed">已允许后台运行 ✓（点我可改）</string>
+    <string name="battery_not_allowed">还没允许后台运行，点我去允许</string>
     <string name="a11y_off">状态：未开启（自动点选不工作）</string>
     <string name="addr_top">顶部 ›</string>
     <string name="addr_bottom">底部 ›</string>
