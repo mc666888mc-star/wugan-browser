@@ -168,37 +168,16 @@ public class SettingsActivity extends Activity {
                 showA11yDiag();
             }
         });
-        // v10.6：点"应用信息"先弹三步指引——系统没给直达"允许受限制的设置"
-        // 开关的入口，只能跳到应用信息页，剩下的按指引点两下
+        // v11.3：revert v10.6/v11.1/v11.2 的指引弹窗——实测该机型点无障碍开关
+        // 直接就能开，不存在"受限制的设置"这一关，指引是错的，直接删掉，
+        // "应用信息"点开即直达系统页面
         findViewById(R.id.appinfo_row).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new AlertDialog.Builder(SettingsActivity.this)
-                        .setTitle(R.string.restricted_guide_title)
-                        .setMessage(R.string.restricted_guide_msg)
-                        .setPositiveButton(R.string.restricted_guide_go,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface d, int w) {
-                                        Intent i = new Intent(
-                                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                        i.setData(Uri.parse(
-                                                "package:" + getPackageName()));
-                                        startActivity(i);
-                                    }
-                                })
-                        .setNeutralButton(R.string.restricted_guide_step1,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface d, int w) {
-                                        // v11.2：第1步先去无障碍点一下开关（会被拒绝），
-                                        // 这一步会"激活"出应用详情页右上角的 ⋮ 菜单
-                                        startActivity(new Intent(
-                                                Settings.ACTION_ACCESSIBILITY_SETTINGS));
-                                    }
-                                })
-                        .setNegativeButton(android.R.string.cancel, null)
-                        .show();
+                Intent i = new Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                i.setData(Uri.parse("package:" + getPackageName()));
+                startActivity(i);
             }
         });
         findViewById(R.id.battery_row).setOnClickListener(new View.OnClickListener() {

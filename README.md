@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v11.2（versionCode 26）
+- 当前版本 / Current version：v11.3（versionCode 27）
 - 开源协议 / License：GPLv3
 
 ---
@@ -76,13 +76,9 @@ GPLv3（见 `LICENSE` 文件）。
 
 ### 更新日志
 
-#### v11.2（受限制设置指引重做：三个点要先"激活"）
+#### v11.3（删掉多余的指引弹窗）
 
-- 纠正 v11.1 的错误指引：⋮ 菜单不是一直都在的，必须先去无障碍点一次服务开关（被拒绝），才会"激活"出来。对话框改成两步按钮：「去点开关」→「去应用信息」
-
-#### v11.1（指引文案修精确）
-
-- 「允许受限制的设置」三步指引：明确说"标题栏右上角"，别在页面内容里找；并提醒在应用详情第一页操作
+- 「应用信息」点开直接跳系统页面，不再弹指引框；无障碍/电池优化直达不变
 
 #### v11.0（播放器新界面 + 画中画）
 
@@ -102,11 +98,6 @@ GPLv3（见 `LICENSE` 文件）。
 - 「电池优化」改直达授权：不再跳那个翻半天找不到的大列表，直接弹系统对话框"允许后台运行？"，点一下允许就行；设置页实时显示"已允许 ✓ / 还没允许"，回来自动刷新
 - 补声明 `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` 权限（就是上面那个对话框要的）；下载器不发系统通知，`POST_NOTIFICATIONS` 不需要，没加
 
-#### v10.6（受限制设置三步指引）
-
-- 点「应用信息」先弹三步指引：右上角 ⋮ → 允许受限制的设置 → 允许，照着点两下就行；开完返回，状态自动刷新成 ✓ 还是 ⚠️ 一眼看到
-- 说明：安卓没给直达"允许受限制的设置"开关的公开入口（这是系统安全设计，所有 App 都一样），能跳的最深就是应用信息页
-
 #### v10.5（首页居中搜索 + 标签页预览图）
 
 - 首页加了居中搜索框：大 Logo + 圆角搜索条，输关键词或网址回车即达（走 `wugan://search` 交给 App 解析，沿用地址栏同一套"像网址直达、否则按默认引擎搜"，零 JS 桥接）
@@ -117,8 +108,7 @@ GPLv3（见 `LICENSE` 文件）。
 
 - 新增「🧪 自动点选测试」：内置确定性测试页，用 Cloudflare 官方强制交互测试 key，每次必定弹出勾选框——几秒就知道点选灵不灵，不用再去注册页碰运气、录屏
 - 设置页无障碍状态改三态：「未开启 / 已开启 ✓ / 已开启但系统没把它跑起来 ⚠️」，开了没跑时直接给人话指引（诊断框里也加了同一段提示）
-- 新增一键直达：「应用信息」（去开"允许受限制的设置"，更新 App 后要重开）、「电池优化」（允许后台活动，防服务被杀）；无障碍直达按钮本来就有
-- 更新说明：以后每次更新 App，都要重走一遍「应用信息 → 右上角 ⋮ → 允许受限制的设置」，否则无障碍服务会被系统收回
+- 新增一键直达：「应用信息」、「电池优化」（允许后台活动，防服务被杀）；无障碍直达按钮本来就有
 
 #### v10.3（下载器修文件名/打开/重命名）
 
@@ -277,13 +267,9 @@ Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under 
 
 ### Changelog
 
-#### v11.2 (redone restricted-settings guide: the ⋮ menu must be "unlocked" first)
+#### v11.3 (removed the extra guide dialog)
 
-- Fixed v11.1's wrong guide: the ⋮ menu only appears after you attempt the accessibility toggle once (and get denied). Dialog now has two step buttons.
-
-#### v11.1 (clearer guide text)
-
-- Restricted-settings 3-step guide now says "title bar, top right" explicitly, and reminds you to stay on the app-info main page
+- "App info" now jumps straight to the system page, no more guide popup; accessibility/battery shortcuts unchanged
 
 #### v11.0 (new player UI + picture-in-picture)
 
@@ -303,11 +289,6 @@ Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under 
 - "Battery optimization" now goes straight to authorization: no more hunting through the giant list — a system dialog asks "allow background activity?", one tap and done; the settings page shows live status ("allowed ✓ / not yet") and refreshes on return
 - Declared `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` (required for that dialog); the downloader posts no system notifications so `POST_NOTIFICATIONS` wasn't added
 
-#### v10.6 (restricted-settings 3-step guide)
-
-- Tapping "App info" now shows a 3-step guide first: ⋮ → Allow restricted settings → Allow — just follow the two taps; when you come back, the status auto-refreshes to ✓ or ⚠️
-- Note: Android offers no public entry to jump directly to the "Allow restricted settings" toggle (system security design, same for every app) — the App info page is the deepest jump possible
-
 #### v10.5 (centered home search + tab thumbnails)
 
 - Centered search box on the home page: big logo + rounded search bar, type a keyword or URL and hit enter (goes through `wugan://search` and reuses the address bar's "URL goes direct, otherwise search with the default engine" logic — no JS bridge)
@@ -318,8 +299,7 @@ Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under 
 
 - New "🧪 Auto-tap test": a built-in deterministic test page using Cloudflare's official force-interactive test key, so the checkbox appears every single time — know in seconds whether tapping works, no more sign-up-page roulette or screen recordings
 - Accessibility status is now three-state: off / on ✓ / on-but-not-running ⚠️, with plain-language guidance when the system lists the service but won't run it (same hint added to the diagnostics dialog)
-- New one-tap shortcuts: "App info" (re-enable "Allow restricted settings" — required again after every app update) and "Battery optimization" (allow background activity so the system doesn't kill the service); the accessibility shortcut already existed
-- Release note: after every app update, redo "App info → ⋮ → Allow restricted settings", or the system will revoke the accessibility service
+- New one-tap shortcuts: "App info" and "Battery optimization" (allow background activity so the system doesn't kill the service); the accessibility shortcut already existed
 
 #### v10.3 (downloader filename/open/rename fixes)
 

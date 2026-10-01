@@ -131,10 +131,6 @@
     <string name="jump_appinfo_title">应用信息</string>
     <string name="jump_appinfo_sub">一键直达 → 右上角 ⋮ → 允许受限制的设置（更新后要重开）</string>
     <!-- v10.6：受限制设置三步指引（系统没给直达开关的入口，只能跳应用信息页） -->
-    <string name="restricted_guide_title">打开「允许受限制的设置」</string>
-    <string name="restricted_guide_msg">这个开关是藏起来的，得先"激活"它出来，分四步：\n\n1. 点「去点开关」进无障碍，找到「无感浏览器」点一下开关（会被系统拒绝，弹出受限制提示——这一步必须点，点了三个点才会出现）\n\n2. 点「去应用信息」，标题栏右上角会出现 ⋮（三个点）\n3. 点 ⋮ →「允许受限制的设置」→「允许」\n4. 回无障碍，重新打开服务开关\n\n开完返回，这里的状态会自动刷新。</string>
-    <string name="restricted_guide_go">去应用信息</string>
-    <string name="restricted_guide_step1">去点开关</string>
     <string name="jump_battery_title">电池优化</string>
     <string name="jump_battery_sub">点我直接允许后台运行，防止服务被系统杀掉</string>
     <!-- v10.7：电池优化白名单实时状态 -->
