@@ -198,6 +198,12 @@
     <string name="download_video">下载视频</string>
     <string name="player_lock">锁定</string>
     <string name="player_unlock">解锁</string>
+    <!-- v11.0 -->
+    <string name="player_play">播放</string>
+    <string name="player_pause">暂停</string>
+    <string name="player_speed">倍速</string>
+    <string name="player_pip">画中画</string>
+    <string name="pip_failed">当前设备不支持画中画</string>
     <!-- 无障碍诊断 -->
     <string name="a11y_off_tap">未开启（点我查看诊断）</string>
     <string name="a11y_diag_title">无障碍诊断</string>

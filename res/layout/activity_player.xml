@@ -32,56 +32,106 @@
         android:textStyle="bold"
         android:visibility="gone" />
 
-    <LinearLayout
-        android:id="@+id/top_bar"
+    <!-- v11.0：左上标题 -->
+    <TextView
+        android:id="@+id/title_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
+        android:layout_gravity="top|start"
         android:layout_margin="16dp"
-        android:orientation="horizontal">
+        android:maxWidth="240dp"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:background="#99000000"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp" />
+
+    <!-- v11.0：右侧竖排圆钮 -->
+    <LinearLayout
+        android:id="@+id/side_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|center_vertical"
+        android:layout_marginEnd="12dp"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/play_button"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/circle_bg"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_pause"
+            android:contentDescription="@string/player_pause" />
 
         <Button
             android:id="@+id/speed_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:textSize="12sp"
-            android:text="1.0x" />
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/circle_bg"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:text="1.0x"
+            android:contentDescription="@string/player_speed" />
 
-        <Button
+        <ImageButton
             android:id="@+id/lock_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:textSize="12sp"
-            android:text="@string/player_lock" />
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/circle_bg"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_lock"
+            android:contentDescription="@string/player_lock" />
 
-        <Button
-            android:id="@+id/download_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:textSize="12sp"
-            android:text="@string/download_video" />
+        <ImageButton
+            android:id="@+id/pip_button"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/circle_bg"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_pip"
+            android:contentDescription="@string/player_pip" />
 
-        <Button
+        <ImageButton
             android:id="@+id/rotate_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:text="@string/rotate" />
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/circle_bg"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_rotate"
+            android:contentDescription="@string/rotate" />
+
+        <ImageButton
+            android:id="@+id/download_button"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/circle_bg"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_file_download"
+            android:contentDescription="@string/download_video" />
 
     </LinearLayout>
 
     <!-- 锁定状态下唯一的解锁入口 -->
-    <Button
+    <ImageButton
         android:id="@+id/unlock_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_gravity="top|end"
         android:layout_margin="16dp"
-        android:textSize="12sp"
-        android:text="@string/player_unlock"
+        android:background="@drawable/circle_bg"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_lock"
+        android:contentDescription="@string/player_unlock"
         android:visibility="gone" />
 
 </FrameLayout>

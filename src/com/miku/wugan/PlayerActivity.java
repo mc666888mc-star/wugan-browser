@@ -2,20 +2,24 @@ package com.miku.wugan;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.PictureInPictureParams;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.media.MediaPlayer;
 import android.media.PlaybackParams;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Rational;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.TextView;
@@ -26,6 +30,8 @@ import android.widget.VideoView;
  * 内置视频播放器：VideoView + MediaController（进度拖动/播放暂停），原生支持 m3u8/HLS。
  * v9：右上角下载视频按钮。
  * v10：双击左/右半屏快退/快进 10 秒；倍速按钮（0.5x~2x 循环）；锁定按钮（锁住后只留解锁键，防误触）。
+ * v11：新布局——左上标题 + 右侧竖排圆钮（播放/暂停、倍速、锁定、画中画、旋转、下载）；
+ *     画中画（Android 8.0+，小窗继续播）。
  */
 public class PlayerActivity extends Activity {
 
@@ -37,15 +43,17 @@ public class PlayerActivity extends Activity {
     private VideoView videoView;
     private MediaController mediaController;
     private MediaPlayer mediaPlayer;
-    private LinearLayout topBar;
-    private Button rotateButton;
+    private LinearLayout sideBar;
+    private TextView titleView;
+    private ImageButton playButton;
     private Button speedButton;
     private View touchBlocker;
-    private Button unlockButton;
+    private ImageButton unlockButton;
     private TextView skipHint;
 
     private boolean landscape = false;
     private boolean locked = false;
+    private boolean inPip = false;
     private int speedIdx = 1; // 默认 1.0x
     private String pendingDownloadUrl;
     private final Handler handler = new Handler();
@@ -64,14 +72,29 @@ public class PlayerActivity extends Activity {
         setContentView(R.layout.activity_player);
 
         videoView = findViewById(R.id.video_view);
-        topBar = findViewById(R.id.top_bar);
-        rotateButton = findViewById(R.id.rotate_button);
+        sideBar = findViewById(R.id.side_bar);
+        titleView = findViewById(R.id.title_view);
+        playButton = findViewById(R.id.play_button);
         speedButton = findViewById(R.id.speed_button);
-        Button lockButton = findViewById(R.id.lock_button);
-        Button downloadButton = findViewById(R.id.download_button);
+        ImageButton lockButton = findViewById(R.id.lock_button);
+        ImageButton pipButton = findViewById(R.id.pip_button);
+        ImageButton rotateButton = findViewById(R.id.rotate_button);
+        ImageButton downloadButton = findViewById(R.id.download_button);
         touchBlocker = findViewById(R.id.touch_blocker);
         unlockButton = findViewById(R.id.unlock_button);
         skipHint = findViewById(R.id.skip_hint);
+
+        // v11.0：标题（页面标题优先，取不到就用链接文件名）
+        String title = getIntent().getStringExtra("title");
+        String url = getIntent().getStringExtra("url");
+        if (title == null || title.isEmpty()) {
+            title = fileNameOf(url);
+        }
+        if (title == null || title.isEmpty()) {
+            titleView.setVisibility(View.GONE);
+        } else {
+            titleView.setText(title);
+        }
 
         mediaController = new MediaController(this);
         mediaController.setAnchorView(videoView);
@@ -99,14 +122,11 @@ public class PlayerActivity extends Activity {
                     }
                 });
 
-        rotateButton.setOnClickListener(new View.OnClickListener() {
+        // v11.0：播放/暂停圆钮
+        playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                landscape = !landscape;
-                setRequestedOrientation(landscape
-                        ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                        : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                rotateButton.setText(landscape ? R.string.to_portrait : R.string.rotate);
+                togglePlay();
             }
         });
 
@@ -133,7 +153,24 @@ public class PlayerActivity extends Activity {
             }
         });
 
-        String url = getIntent().getStringExtra("url");
+        // v11.0：画中画
+        pipButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                enterPip();
+            }
+        });
+
+        rotateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                landscape = !landscape;
+                setRequestedOrientation(landscape
+                        ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                        : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            }
+        });
+
         if (url == null || url.isEmpty()) {
             Toast.makeText(this, getString(R.string.no_play_url), Toast.LENGTH_SHORT).show();
             finish();
@@ -162,6 +199,13 @@ public class PlayerActivity extends Activity {
                 mediaPlayer = mp;
                 applySpeed();
                 videoView.start();
+                updatePlayIcon();
+            }
+        });
+        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                updatePlayIcon();
             }
         });
         videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
@@ -172,6 +216,39 @@ public class PlayerActivity extends Activity {
                 return true;
             }
         });
+    }
+
+    /** 播放/暂停切换 */
+    private void togglePlay() {
+        if (videoView.isPlaying()) {
+            videoView.pause();
+        } else {
+            videoView.start();
+        }
+        updatePlayIcon();
+    }
+
+    private void updatePlayIcon() {
+        boolean playing = videoView != null && videoView.isPlaying();
+        playButton.setImageResource(playing ? R.drawable.ic_pause : R.drawable.ic_play);
+        playButton.setContentDescription(getString(
+                playing ? R.string.player_pause : R.string.player_play));
+    }
+
+    /** 从链接里抠文件名当标题 */
+    private static String fileNameOf(String url) {
+        if (url == null) {
+            return null;
+        }
+        int q = url.indexOf('?');
+        String noQuery = q >= 0 ? url.substring(0, q) : url;
+        int s = noQuery.lastIndexOf('/');
+        String name = s >= 0 ? noQuery.substring(s + 1) : noQuery;
+        try {
+            name = java.net.URLDecoder.decode(name, "UTF-8");
+        } catch (Exception ignored) {
+        }
+        return name.isEmpty() ? null : name;
     }
 
     /** 快进/快退（毫秒，可为负） */
@@ -210,10 +287,38 @@ public class PlayerActivity extends Activity {
 
     private void setLocked(boolean lock) {
         locked = lock;
-        topBar.setVisibility(lock ? View.GONE : View.VISIBLE);
+        sideBar.setVisibility(lock ? View.GONE : View.VISIBLE);
+        titleView.setVisibility(lock ? View.GONE : View.VISIBLE);
         touchBlocker.setVisibility(lock ? View.VISIBLE : View.GONE);
         unlockButton.setVisibility(lock ? View.VISIBLE : View.GONE);
         if (lock && mediaController != null) {
+            mediaController.hide();
+        }
+    }
+
+    /** v11.0：进画中画（小窗继续播） */
+    private void enterPip() {
+        try {
+            PictureInPictureParams p = new PictureInPictureParams.Builder()
+                    .setAspectRatio(new Rational(16, 9))
+                    .build();
+            enterPictureInPictureMode(p);
+        } catch (Exception e) {
+            Toast.makeText(this, getString(R.string.pip_failed),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode,
+                                             Configuration newConfig) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
+        inPip = isInPictureInPictureMode;
+        int v = inPip ? View.GONE : View.VISIBLE;
+        sideBar.setVisibility(locked || inPip ? View.GONE : v);
+        titleView.setVisibility(locked || inPip ? View.GONE : v);
+        unlockButton.setVisibility(locked && !inPip ? View.VISIBLE : View.GONE);
+        if (inPip && mediaController != null) {
             mediaController.hide();
         }
     }
@@ -240,7 +345,8 @@ public class PlayerActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (videoView != null) {
+        // 画中画时不暂停，小窗继续播
+        if (!inPip && videoView != null) {
             videoView.pause();
         }
     }

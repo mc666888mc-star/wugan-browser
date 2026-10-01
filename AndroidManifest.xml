@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.miku.wugan"
-    android:versionCode="23"
-    android:versionName="10.8">
+    android:versionCode="24"
+    android:versionName="11.0">
 
     <uses-sdk
         android:minSdkVersion="26"
@@ -65,8 +65,9 @@
         <activity
             android:name=".PlayerActivity"
             android:exported="false"
+            android:supportsPictureInPicture="true"
             android:screenOrientation="sensor"
-            android:configChanges="orientation|screenSize|keyboardHidden" />
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden" />
 
         <activity
             android:name=".DownloadActivity"

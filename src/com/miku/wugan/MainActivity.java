@@ -1604,6 +1604,13 @@ public class MainActivity extends Activity {
     private void openPlayer(String url) {
         Intent i = new Intent(this, PlayerActivity.class);
         i.putExtra("url", url);
+        // v11.0：左上标题用页面标题
+        if (webView != null) {
+            String t = webView.getTitle();
+            if (t != null && !t.isEmpty()) {
+                i.putExtra("title", t);
+            }
+        }
         startActivity(i);
     }
 

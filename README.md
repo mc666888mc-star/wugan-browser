@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v10.8（versionCode 23）
+- 当前版本 / Current version：v11.0（versionCode 24）
 - 开源协议 / License：GPLv3
 
 ---
@@ -75,6 +75,13 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v11.0（播放器新界面 + 画中画）
+
+- 新布局：左上视频标题（页面标题优先，取不到就显示文件名）+ 右侧竖排圆形按钮
+- 圆钮：播放/暂停、倍速、锁定、画中画、旋转、下载——5 个图标（播放/暂停/锁/画中画/旋转）全部手绘
+- 画中画：点圆钮进小窗，后台继续播；小窗里自动藏掉所有按钮
+- 锁定逻辑同步新布局；横屏照常用
 
 #### v10.8（下载通知）
 
@@ -261,6 +268,13 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v11.0 (new player UI + picture-in-picture)
+
+- New layout: video title top-left (page title first, file name as fallback) + vertical round buttons on the right
+- Round buttons: play/pause, speed, lock, PiP, rotate, download — 5 icons (play/pause/lock/PiP/rotate) all hand-drawn
+- Picture-in-picture: tap to shrink into a floating window, keeps playing; controls auto-hide in PiP
+- Lock logic follows the new layout; landscape works as before
 
 #### v10.8 (download notifications)
 
