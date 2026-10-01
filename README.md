@@ -6,7 +6,7 @@
 > A real-kernel browser that keeps Cloudflare challenges away — and auto-taps the ones that slip through.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v8.4（versionCode 12）
+- 当前版本 / Current version：v8.5（versionCode 13）
 - 开源协议 / License：GPLv3
 
 ---
@@ -75,7 +75,10 @@ GPLv3（见 `LICENSE` 文件）。
 
 ### 更新日志
 
-#### v8.4（中英双语）
+#### v8.5（两个 bug 修复）
+
+- 设置页无障碍状态永远显示"未开启"：之前用 `包名/.ChallengeTapService` 短名去匹配系统存的完整 flatten 类名，永远匹配不上；改成 ComponentName 逐个比对
+- Cloudflare 注册页等内嵌 Turnstile 点不动：挂件把"请验证您是真人"写在可点 wrapper 的子节点上，可点节点自己没文本；改成子树（限深 4 层）文本也算命中，且先深后浅优先点最里层的可点节点。顺带让 Yandex 第一关的复选框也能被点到
 
 - 142 条文案抽成 `res/values/strings.xml`（中文默认）+ `res/values-en/strings.xml`（英文）；英文系统全英文显示，中文系统不受影响，其他语言默认回退中文
 - 带参数文案用占位符（`%1$s` / `%1$d`）；搜索引擎 chip 的"谷歌"按语言显示 Google/谷歌
@@ -193,7 +196,10 @@ Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under 
 
 ### Changelog
 
-#### v8.4 (bilingual)
+#### v8.5 (two bug fixes)
+
+- Settings always showed accessibility as "Off": the old check matched the short name `pkg/.ChallengeTapService` against the system's stored fully-flattened component names, which never matches; now compares via ComponentName one by one
+- Embedded Turnstile (e.g. Cloudflare sign-up page) never got tapped: the widget puts "verify you are human" text on a child of the clickable wrapper, leaving the clickable node itself textless; subtree text (depth-limited to 4) now counts as a hit, and deepest clickable nodes are tried first. Yandex's first-stage checkbox benefits too
 
 - 142 strings extracted into `res/values/strings.xml` (Chinese default) + `res/values-en/strings.xml` (English); full English UI on English-system devices as "Wugan Browser"; everything else falls back to Chinese
 - Parameterized strings use `%1$s` / `%1$d`; the engine chip shows Google/谷歌 per locale
