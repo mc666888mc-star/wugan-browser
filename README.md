@@ -66,7 +66,9 @@ bash build.sh
 
 要求：JDK 17（`build.sh` 已写死 PATH）、`~/Android/Sdk`（platforms/android-34 + build-tools/34.0.0）。
 内置 VPN 引擎需先编好 `~/workspace/usque-aar/usque.aar`（gomobile 把隧道引擎编成 AAR，`build.sh`
-会自动取出其中的 classes.jar 与 arm64 `.so` 打进 APK）。
+会自动取出其中的 arm64 `.so` 打进 APK 的 `lib/`）。另需 `~/workspace/usque-aar/mobile-bindings.jar`
+（Java 绑定层：跑一遍 `usque-aar/rebuild-bindings.sh` 生成——不用 AAR 自带的 classes.jar，
+它里面的 `go/Seq$GoRefQueue$1.class` 会让 build-tools 34.0.0 的 d8 报 NPE）。
 签名 keystore 在项目根 `debug.keystore`（常驻，不进 `out/`，保证覆盖安装不报签名冲突）。
 广告规则源文件在 `assets/adblock_hosts.txt`（构建时打进 APK，首次运行拷贝到应用私有目录后使用）。
 
