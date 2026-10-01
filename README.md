@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v11.1（versionCode 25）
+- 当前版本 / Current version：v11.2（versionCode 26）
 - 开源协议 / License：GPLv3
 
 ---
@@ -75,6 +75,10 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v11.2（受限制设置指引重做：三个点要先"激活"）
+
+- 纠正 v11.1 的错误指引：⋮ 菜单不是一直都在的，必须先去无障碍点一次服务开关（被拒绝），才会"激活"出来。对话框改成两步按钮：「去点开关」→「去应用信息」
 
 #### v11.1（指引文案修精确）
 
@@ -272,6 +276,10 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v11.2 (redone restricted-settings guide: the ⋮ menu must be "unlocked" first)
+
+- Fixed v11.1's wrong guide: the ⋮ menu only appears after you attempt the accessibility toggle once (and get denied). Dialog now has two step buttons.
 
 #### v11.1 (clearer guide text)
 

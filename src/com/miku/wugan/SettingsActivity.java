@@ -187,6 +187,16 @@ public class SettingsActivity extends Activity {
                                         startActivity(i);
                                     }
                                 })
+                        .setNeutralButton(R.string.restricted_guide_step1,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface d, int w) {
+                                        // v11.2：第1步先去无障碍点一下开关（会被拒绝），
+                                        // 这一步会"激活"出应用详情页右上角的 ⋮ 菜单
+                                        startActivity(new Intent(
+                                                Settings.ACTION_ACCESSIBILITY_SETTINGS));
+                                    }
+                                })
                         .setNegativeButton(android.R.string.cancel, null)
                         .show();
             }
