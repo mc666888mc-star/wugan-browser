@@ -121,9 +121,7 @@
     <string name="cant_open_settings">Can\'t open system settings</string>
     <string name="cleared_data">Cleared cookies and browsing history</string>
     <string name="take_effect_hint">Takes effect when you return to the browser</string>
-    <string name="about_text">Wugan Browser %1$s\nReal system WebView core · zero JS injection · open source (GPLv3)\nAuto-taps Cloudflare verification so you skip the wait\nIcons: Material Icons by Google (Apache License 2.0)</string>
-    <string name="a11y_on">Status: On ✓</string>
-    <string name="a11y_off">Status: Off (auto-tap won\'t work)</string>
+    <string name="about_text">Wugan Browser %1$s\nReal system WebView core · zero JS injection · open source (GPLv3)\nBuilt-in VPN, one-tap encrypted tunnel\nIcons: Material Icons by Google (Apache License 2.0)</string>
     <string name="addr_top">Top ›</string>
     <string name="addr_bottom">Bottom ›</string>
     <string name="addr_pos_title">Address bar position</string>
@@ -135,13 +133,9 @@
     <string name="section_search">Search engine</string>
     <string name="section_wallpaper">Wallpaper</string>
     <string name="section_privacy">Privacy &amp; security</string>
-    <string name="section_a11y">Accessibility</string>
-    <string name="auto_tap">Auto-tap verification</string>
-    <string name="go_enable">Turn on</string>
     <string name="default_browser">Set as default browser</string>
     <string name="about">About</string>
     <string name="clear_data">Clear browsing data</string>
-    <string name="accessibility_description">Automatically taps Cloudflare human-verification checkboxes so you don\'t have to.</string>
     <!-- Built-in downloader -->
     <string name="dl_title">Downloads</string>
     <string name="dl_empty">No downloads yet\nTap "Download video" in the player to start</string>
@@ -175,19 +169,15 @@
     <string name="player_lock">Lock</string>
     <string name="player_unlock">Unlock</string>
     <!-- Accessibility diagnostics -->
-    <string name="a11y_off_tap">Off (tap for diagnostics)</string>
-    <string name="a11y_diag_title">Accessibility diagnostics</string>
-    <string name="a11y_diag_master">Master accessibility switch</string>
-    <string name="a11y_diag_in_list">In system enabled list</string>
-    <string name="a11y_diag_running">In running services list</string>
-    <string name="a11y_diag_alive">Service last alive</string>
-    <string name="a11y_diag_unbind">Service last unbound</string>
-    <string name="a11y_diag_never">Never</string>
-    <string name="a11y_diag_yes">Yes</string>
-    <string name="a11y_diag_no">No</string>
-    <string name="a11y_diag_raw">Raw list</string>
-    <string name="a11y_diag_widget">Verification widget last seen</string>
-    <string name="a11y_diag_tap">Last tap attempt</string>
-    <string name="a11y_diag_ok"> (OK)</string>
-    <string name="a11y_diag_fail"> (failed)</string>
+    <string name="section_vpn">VPN (built-in)</string>
+    <string name="vpn_title">Encrypted tunnel</string>
+    <string name="vpn_off">Not connected</string>
+    <string name="vpn_connecting">Connecting…</string>
+    <string name="vpn_registering">Registering account…</string>
+    <string name="vpn_on">Connected ✓ (browser traffic via encrypted tunnel)</string>
+    <string name="vpn_connect">Connect</string>
+    <string name="vpn_disconnect">Disconnect</string>
+    <string name="vpn_reg_fail">Registration failed, try another network</string>
+    <string name="vpn_conn_fail">Connection failed, try again later</string>
+    <string name="licenses_title">Open-source licenses</string>
 </resources>

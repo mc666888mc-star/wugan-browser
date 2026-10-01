@@ -2,11 +2,11 @@
 
 [中文版](#中文版) ｜ [English](#english-version)
 
-> 尽量减少 Cloudflare 验证打扰的真内核浏览器：稳定指纹 + 复用验证凭证，复选框式的验证页自动点一下。
-> A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
+> 纯净无感的真内核浏览器，内置 VPN 一键连接加密隧道：稳定指纹 + 复用验证凭证，原生访问外网。
+> A clean, real-kernel browser with built-in VPN: one-tap encrypted tunnel, consistent fingerprint, reused clearance cookies, native access to the open internet.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v11.3（versionCode 27）
+- 当前版本 / Current version：v12.0（versionCode 28）
 - 开源协议 / License：GPLv3
 
 ---
@@ -18,7 +18,7 @@
 1. **真浏览器内核**：用系统 WebView（就是 Chrome 内核），不是自动化工具。Cloudflare 眼里是正常手机浏览器。
 2. **UA 去 WebView 标记**：把 UA 里的 `; wv` 去掉，看起来像原生 Chrome Mobile。**保持移动端 UA，不伪装桌面**（UA 和 TLS 指纹表里不一反而更容易被拦）。
 3. **Cookie 持久化**：`cf_clearance`（验证通过凭证）落盘保存，同一站点二次访问直接放行，不用重复验证。
-4. **自动点选**：`ChallengeTapService`（无障碍服务）检测到验证页里的复选框会自动点一下，15 秒内只点一次，切窗口重置。v2 扩展了关键词，能识别内嵌式 Turnstile 挂件。
+4. **内置 VPN**：设置里「VPN（内置）」一键注册普通账号并连接，浏览器流量经加密隧道直达外网。免 root，不碰系统 VPN 设置；下载器同样走隧道。
 5. **零 JS 注入**：页面里不注入任何脚本（注入脚本本身就是可检测的指纹）。
 6. **Edge 式双栏工具栏**（v8）：顶部地址行 = 搜索引擎胶囊 + 加宽输入框 + 刷新/停止二合一按钮（加载中显示 ✕ 点停，加载完变刷新）；底部导航行 = 后退 / 前进 / 主页 / 新标签 / 标签页数 / ⋯菜单。
 7. **浏览历史 + 收藏夹**：SQLite 记录，点击打开，一键清空；网址列表里 %XX 编码会解码成中文显示（v8.2）。
@@ -47,15 +47,15 @@
 
 - **做不到"一次都不弹"**：弹不弹是 Cloudflare 服务端决定的，权重排序是 IP 信誉 > 站点安全等级 > 指纹一致性。这个 App 只优化第 3 项。
 - **IP 仍是老大**：走机房/代理 IP，该弹还是弹；手机流量直连基本不弹。
-- **自动点选是启发式的**：认"复选框点勾"型 Turnstile（含内嵌挂件）；纯倒计时 5 秒那种（"Just a moment" 自动转圈）不需要点，等它自己过；极端情况（Under Attack Mode）谁来都得等。
+- **自动点选已砍掉**（v12.0）：Turnstile 多数为非交互式、自己转圈就过，之前也没有一次被用户确认的成功点选。留出最纯净的壳子，验证页请手动点一下。
+- **内置 VPN 的边界**：只接管浏览器的 http/https **GET** 请求和下载器；POST 请求（如登录表单提交）和内置播放器的视频流暂走直连。隧道本身是用户态实现，速度不如系统级 VPN，够用但别指望跑满。
 - **广告拦截是域名级的**：只拦请求，不做元素隐藏/CSS 注入，所以广告位可能留白块——这是故意的，为了不污染页面指纹。
-- **无障碍权限要手动开**：安装后去「设置 → 无障碍 → 无感浏览器自动点选」打开开关，否则自动点选不工作（浏览器本身不受影响）。
 
 ### 安装
 
 1. 把 `无感浏览器.apk` 传到手机，点安装（允许"安装未知应用"）。同签名，可直接覆盖安装。
 2. 打开 App，地址栏输网址，回车。
-3. （可选）设置 → 无障碍 → 开启「无感浏览器自动点选」。
+3. （可选）设置 → VPN（内置）→ 一键开启，浏览器即获得加密隧道。
 
 ### 构建
 
@@ -75,6 +75,13 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v12.0（砍掉自动点选 + 内置 VPN）
+
+- **砍掉自动点选全部代码**：无障碍服务、诊断框、测试页、设置项全部删除，留出最纯净的壳子（之前没有一次被用户确认的成功点选，Turnstile 多数自过）。
+- **内置 VPN**：设置页新增「VPN（内置）」专区，一键注册普通账号并连接；浏览器 http/https 流量与下载器经加密隧道直达外网。免 root，不碰系统 VPN 设置。
+- 产品定位更新：从"减少验证打扰"改为"纯净浏览 + 内置 VPN"。
+- 内置隧道组件为 MIT 许可的二进制（未修改、原样分发），署名见 `NOTICES.md` 与设置页「关于 → 开源许可」。
 
 #### v11.3（删掉多余的指引弹窗）
 

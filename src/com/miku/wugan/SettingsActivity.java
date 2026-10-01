@@ -2,17 +2,13 @@ package com.miku.wugan;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.accessibilityservice.AccessibilityServiceInfo;
-import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.text.TextUtils;
 import android.view.View;
-import android.view.accessibility.AccessibilityManager;
 import android.webkit.CookieManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -21,11 +17,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.util.List;
+import java.io.InputStream;
 
 /**
  * v5：Edge 风格分组设置页。
- * 外观和布局 / 搜索引擎 / 壁纸 / 隐私和安全 / 无障碍 / 设为默认浏览器 / 关于。
+ * 外观和布局 / 搜索引擎 / 壁纸 / 隐私和安全 / VPN / 设为默认浏览器 / 关于。
  */
 public class SettingsActivity extends Activity {
 
@@ -46,11 +42,12 @@ public class SettingsActivity extends Activity {
 
     private SharedPreferences prefs;
     private HistoryDbHelper historyDb;
-    private TextView a11yStatus;
     private TextView addrPosValue;
     private TextView engineValue;
     private TextView wallpaperCountValue;
     private TextView batterySub;
+    private TextView vpnStatus;
+    private Button vpnButton;
     private Switch rotateSwitch;
 
     @Override
@@ -60,7 +57,6 @@ public class SettingsActivity extends Activity {
 
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
         historyDb = new HistoryDbHelper(this);
-        a11yStatus = findViewById(R.id.a11y_status);
         addrPosValue = findViewById(R.id.addr_pos_value);
         engineValue = findViewById(R.id.engine_value);
         wallpaperCountValue = findViewById(R.id.wallpaper_count_value);
@@ -153,21 +149,6 @@ public class SettingsActivity extends Activity {
             }
         });
 
-        // ---- 无障碍 ----
-        Button a11yButton = findViewById(R.id.a11y_button);
-        a11yButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
-            }
-        });
-        // 点无障碍行弹出诊断（系统名单原文 + 服务心跳），方便排查"开了却显示未开启"
-        findViewById(R.id.a11y_row).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showA11yDiag();
-            }
-        });
         // v11.3：revert v10.6/v11.1/v11.2 的指引弹窗——实测该机型点无障碍开关
         // 直接就能开，不存在"受限制的设置"这一关，指引是错的，直接删掉，
         // "应用信息"点开即直达系统页面
@@ -202,14 +183,16 @@ public class SettingsActivity extends Activity {
                 }
             }
         });
-        findViewById(R.id.taptest_row).setOnClickListener(new View.OnClickListener() {
+        // ---- VPN（内置）：一键注册普通账号并连接 ----
+        vpnStatus = findViewById(R.id.vpn_status);
+        vpnButton = findViewById(R.id.vpn_button);
+        vpnButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(SettingsActivity.this, MainActivity.class);
-                i.putExtra("url", "file:///android_asset/taptest.html");
-                startActivity(i);
+                toggleVpn();
             }
         });
+        refreshVpnStatus();
 
         // ---- 设为默认浏览器 ----
         findViewById(R.id.default_browser_row).setOnClickListener(new View.OnClickListener() {
@@ -228,6 +211,12 @@ public class SettingsActivity extends Activity {
         // ---- 关于 ----
         TextView about = findViewById(R.id.about_text);
         about.setText(getString(R.string.about_text, appVersion()));
+        findViewById(R.id.licenses_row).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showLicenses();
+            }
+        });
 
         refreshSettingsValues();
     }
@@ -235,17 +224,91 @@ public class SettingsActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        // v10.4 三态：未开启 / 开了但没跑起来 / 运行中
-        boolean inList = isInSecureList();
-        boolean running = isInRunningList();
-        if (running) {
-            a11yStatus.setText(getString(R.string.a11y_on));
-        } else if (inList) {
-            a11yStatus.setText(getString(R.string.a11y_on_not_running));
-        } else {
-            a11yStatus.setText(getString(R.string.a11y_off_tap));
-        }
+        refreshVpnStatus();
         refreshSettingsValues();
+    }
+
+    /** VPN 状态行：已连接 / 未连接 */
+    private void refreshVpnStatus() {
+        if (vpnStatus == null || vpnButton == null) {
+            return;
+        }
+        if (VpnManager.isOn()) {
+            vpnStatus.setText(getString(R.string.vpn_on));
+            vpnButton.setText(getString(R.string.vpn_disconnect));
+        } else {
+            vpnStatus.setText(getString(R.string.vpn_off));
+            vpnButton.setText(getString(R.string.vpn_connect));
+        }
+        vpnButton.setEnabled(true);
+    }
+
+    /** 一键开启 / 断开。注册+连接都在后台线程做，按钮先禁用防连点 */
+    private void toggleVpn() {
+        if (VpnManager.isOn()) {
+            VpnManager.disconnect();
+            refreshVpnStatus();
+            return;
+        }
+        vpnButton.setEnabled(false);
+        vpnStatus.setText(getString(R.string.vpn_registering));
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String err = null;
+                if (!VpnManager.isRegistered(SettingsActivity.this)) {
+                    err = VpnManager.register(SettingsActivity.this);
+                }
+                if (err == null) {
+                    vpnStatus.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            vpnStatus.setText(
+                                    getString(R.string.vpn_connecting));
+                        }
+                    });
+                    err = VpnManager.connect(SettingsActivity.this);
+                }
+                final String msg = err;
+                vpnStatus.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (msg == null) {
+                            refreshVpnStatus();
+                        } else {
+                            vpnButton.setEnabled(true);
+                            vpnStatus.setText(getString(R.string.vpn_off));
+                            Toast.makeText(SettingsActivity.this,
+                                    getString(R.string.vpn_conn_fail) + " (" + msg + ")",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+        }).start();
+    }
+
+    /** 开源许可：内置隧道二进制文件的 MIT 许可文本（协议要求保留署名，放这里不打扰主界面） */
+    private void showLicenses() {
+        String text = "";
+        InputStream in = null;
+        try {
+            in = getAssets().open("notices.txt");
+            byte[] buf = new byte[in.available()];
+            int off = 0, n;
+            while ((n = in.read(buf, off, buf.length - off)) > 0) {
+                off += n;
+            }
+            text = new String(buf, 0, off, "UTF-8");
+        } catch (Exception ignored) {
+        } finally {
+            if (in != null) try { in.close(); } catch (Exception ignored) {}
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.licenses_title)
+                .setMessage(text)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
     }
 
     private void refreshSettingsValues() {
@@ -407,127 +470,6 @@ public class SettingsActivity extends Activity {
         historyDb.clear();
         Toast.makeText(this, getString(R.string.cleared_data),
                 Toast.LENGTH_SHORT).show();
-    }
-
-    /** 本服务的 flatten 名：com.miku.wugan/com.miku.wugan.ChallengeTapService */
-    private String myFlattenName() {
-        return new ComponentName(this, ChallengeTapService.class).flattenToString();
-    }
-
-    /** 信号一：系统 Settings.Secure 名单里有没有我 */
-    private boolean isInSecureList() {
-        int enabled = 0;
-        try {
-            enabled = Settings.Secure.getInt(getContentResolver(),
-                    Settings.Secure.ACCESSIBILITY_ENABLED);
-        } catch (Settings.SettingNotFoundException e) {
-            return false;
-        }
-        if (enabled != 1) {
-            return false;
-        }
-        String services = Settings.Secure.getString(getContentResolver(),
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-        if (services == null) {
-            return false;
-        }
-        // 系统存的是 flatten 后的完整类名，用 ComponentName 逐个比对；
-        // 之前用 "/.ChallengeTapService" 短名 contains 永远匹配不上（v8.5 修过）
-        String me = myFlattenName();
-        TextUtils.SimpleStringSplitter splitter = new TextUtils.SimpleStringSplitter(':');
-        splitter.setString(services);
-        while (splitter.hasNext()) {
-            if (me.equals(splitter.next())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** 信号二：AccessibilityManager 正在运行的服务名单里有没有我（防某些 ROM 名单写法怪异） */
-    private boolean isInRunningList() {
-        try {
-            AccessibilityManager am = (AccessibilityManager)
-                    getSystemService(ACCESSIBILITY_SERVICE);
-            if (am == null) {
-                return false;
-            }
-            String me = myFlattenName();
-            List<AccessibilityServiceInfo> running = am
-                    .getEnabledAccessibilityServiceList(
-                            AccessibilityServiceInfo.FEEDBACK_ALL_MASK);
-            if (running == null) {
-                return false;
-            }
-            for (AccessibilityServiceInfo info : running) {
-                if (me.equals(info.getId())) {
-                    return true;
-                }
-            }
-        } catch (Exception ignored) {
-        }
-        return false;
-    }
-
-    /** 无障碍诊断对话框：把系统看到的原始状态都摆出来，截图发开发者就能定位 */
-    private void showA11yDiag() {
-        int master = 0;
-        try {
-            master = Settings.Secure.getInt(getContentResolver(),
-                    Settings.Secure.ACCESSIBILITY_ENABLED);
-        } catch (Exception ignored) {
-        }
-        String raw = Settings.Secure.getString(getContentResolver(),
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-        SharedPreferences ap = getSharedPreferences(
-                ChallengeTapService.A11Y_PREFS, MODE_PRIVATE);
-        String alive = ChallengeTapService.formatTime(
-                ap.getLong(ChallengeTapService.KEY_LAST_CONNECT, 0));
-        String unbind = ChallengeTapService.formatTime(
-                ap.getLong(ChallengeTapService.KEY_LAST_UNBIND, 0));
-
-        String yes = getString(R.string.a11y_diag_yes);
-        String no = getString(R.string.a11y_diag_no);
-        String never = getString(R.string.a11y_diag_never);
-        StringBuilder sb = new StringBuilder();
-        sb.append(getString(R.string.a11y_diag_master)).append(": ")
-                .append(master == 1 ? yes : no).append("\n");
-        sb.append(getString(R.string.a11y_diag_in_list)).append(": ")
-                .append(isInSecureList() ? yes : no).append("\n");
-        sb.append(getString(R.string.a11y_diag_running)).append(": ")
-                .append(isInRunningList() ? yes : no).append("\n");
-        sb.append(getString(R.string.a11y_diag_alive)).append(": ")
-                .append(alive != null ? alive : never).append("\n");
-        sb.append(getString(R.string.a11y_diag_unbind)).append(": ")
-                .append(unbind != null ? unbind : never).append("\n");
-        // v10.2 遥测：挂件有没有被看到、点选有没有发生、点中没有
-        String widgetSeen = ChallengeTapService.formatTime(
-                ap.getLong(ChallengeTapService.KEY_LAST_WIDGET_SEEN, 0));
-        long tapTime = ap.getLong(ChallengeTapService.KEY_LAST_TAP_TIME, 0);
-        boolean tapOk = ap.getBoolean(ChallengeTapService.KEY_LAST_TAP_OK, false);
-        sb.append(getString(R.string.a11y_diag_widget)).append(": ")
-                .append(widgetSeen != null ? widgetSeen : never).append("\n");
-        sb.append(getString(R.string.a11y_diag_tap)).append(": ");
-        if (tapTime > 0) {
-            sb.append(ChallengeTapService.formatTime(tapTime))
-                    .append(tapOk ? getString(R.string.a11y_diag_ok)
-                            : getString(R.string.a11y_diag_fail));
-        } else {
-            sb.append(never);
-        }
-        sb.append("\n");
-        sb.append(getString(R.string.a11y_diag_raw)).append(":\n")
-                .append(raw != null ? raw : "-");
-        // v10.4：开了但没跑起来时，直接在诊断框里给人话指引
-        if (isInSecureList() && !isInRunningList()) {
-            sb.append(getString(R.string.a11y_diag_hint_not_running));
-        }
-
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.a11y_diag_title)
-                .setMessage(sb.toString())
-                .setPositiveButton(android.R.string.ok, null)
-                .show();
     }
 
     @Override

@@ -442,7 +442,10 @@ public class Downloader {
         // ---------- 网络小工具 ----------
 
         private HttpURLConnection openConn(String url, long start) throws Exception {
-            HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+            // v12.0：VPN 开启时下载也经加密隧道
+            HttpURLConnection c = VpnManager.isOn()
+                    ? (HttpURLConnection) new URL(url).openConnection(VpnManager.proxy())
+                    : (HttpURLConnection) new URL(url).openConnection();
             c.setConnectTimeout(CONN_TIMEOUT);
             c.setReadTimeout(READ_TIMEOUT);
             c.setRequestProperty("User-Agent", DL_UA);

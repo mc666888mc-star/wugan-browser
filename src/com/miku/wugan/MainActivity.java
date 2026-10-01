@@ -65,7 +65,7 @@ import java.util.Set;
 /**
  * 无感浏览器 v3：Edge 风格深色 UI。
  * 底部工具栏（后退/前进/地址 pill/标签数/菜单），全部功能收进底部弹出菜单。
- * v2 能力全部保留：自动点选服务、防验证 UA/cookie 策略、广告拦截、历史、无痕、
+ * v2 能力全部保留：防验证 UA/cookie 策略、广告拦截、历史、无痕、
  * 嗅探+播放器。新增：多标签页、收藏夹、下载管理、桌面版 UA、页内查找、翻译、
  * 大声朗读、页面存档、添加到手机、设置页。
  */
@@ -1422,8 +1422,13 @@ public class MainActivity extends Activity {
                 if (adBlocker.shouldBlock(uri)) {
                     return emptyResponse();
                 }
-                // 2) 被动嗅探视频资源（返回 null，WebView 正常处理）
+                // 2) 被动嗅探视频资源（只看 URL，不影响返回）
                 sniffVideoUrl(uri.toString());
+                // 3) v12.0：VPN 开启时 GET 请求经加密隧道（返回 null 则 WebView 直连）
+                WebResourceResponse proxied = VpnFetch.fetch(request);
+                if (proxied != null) {
+                    return proxied;
+                }
                 return null;
             }
 

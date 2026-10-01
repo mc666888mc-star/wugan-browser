@@ -380,7 +380,7 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
 
-        <!-- ===== 无障碍 ===== -->
+        <!-- ===== VPN（内置）：一键注册普通 WARP 账号并连接，浏览器流量经加密隧道直达外网 ===== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -391,20 +391,20 @@
             <ImageView
                 android:layout_width="22dp"
                 android:layout_height="22dp"
-                android:src="@drawable/ic_accessibility" />
+                android:src="@drawable/ic_vpn" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="@string/section_a11y"
+                android:text="@string/section_vpn"
                 android:textColor="#FFFFFF"
                 android:textSize="15sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/a11y_row"
+            android:id="@+id/vpn_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
@@ -424,70 +424,25 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/auto_tap"
+                    android:text="@string/vpn_title"
                     android:textColor="#E0E0E0"
                     android:textSize="15sp" />
 
                 <TextView
-                    android:id="@+id/a11y_status"
+                    android:id="@+id/vpn_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="@string/a11y_off"
+                    android:text="@string/vpn_off"
                     android:textColor="#888888"
                     android:textSize="12sp" />
             </LinearLayout>
 
             <Button
-                android:id="@+id/a11y_button"
+                android:id="@+id/vpn_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/go_enable" />
-        </LinearLayout>
-
-        <!-- v10.4：自动点选确定性测试页（CF 官方强制交互测试 key，必出勾选框） -->
-        <LinearLayout
-            android:id="@+id/taptest_row"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="32dp"
-            android:paddingEnd="8dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/taptest_title"
-                    android:textColor="#E0E0E0"
-                    android:textSize="15sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="@string/taptest_sub"
-                    android:textColor="#888888"
-                    android:textSize="12sp" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="›"
-                android:textColor="#888888"
-                android:textSize="22sp" />
+                android:text="@string/vpn_connect" />
         </LinearLayout>
 
         <!-- v10.4：一键直达系统设置，少走弯路 -->
@@ -651,6 +606,17 @@
             android:lineSpacingExtra="4dp"
             android:textColor="#AAAAAA"
             android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/licenses_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingStart="32dp"
+            android:paddingEnd="8dp"
+            android:text="@string/licenses_title"
+            android:textColor="#666666"
+            android:textSize="12sp" />
 
     </LinearLayout>
 </ScrollView>

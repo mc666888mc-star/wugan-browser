@@ -121,18 +121,13 @@
     <string name="cant_open_settings">打不开系统设置</string>
     <string name="cleared_data">已清除 Cookie 与浏览历史</string>
     <string name="take_effect_hint">返回浏览器后即时生效</string>
-    <string name="about_text">无感浏览器 %1$s\n系统 WebView 真内核 · 零 JS 注入 · GPLv3 开源\n自动点选 Cloudflare 验证，省去等待和点勾的时间\n图标：Material Icons by Google（Apache License 2.0）</string>
-    <string name="a11y_on">状态：已开启 ✓</string>
+    <string name="about_text">无感浏览器 %1$s\n系统 WebView 真内核 · 零 JS 注入 · GPLv3 开源\n内置 VPN，一键连接加密隧道\n图标：Material Icons by Google（Apache License 2.0）</string>
     <!-- v10.4：开了但没跑起来（更新后常见），直接给人话指引 -->
-    <string name="a11y_on_not_running">已开启，但系统没把它跑起来 ⚠️（点我看怎么办）</string>
-    <string name="a11y_diag_hint_not_running">\n⚠️ 名单里有、但没在运行：去系统"无障碍"把本服务关掉再打开；如果是刚更新完 App，先去"应用信息 → 右上角 ⋮ → 允许受限制的设置"重新打开。</string>
-    <string name="taptest_title">🧪 自动点选测试</string>
-    <string name="taptest_sub">打开必出勾选框的测试页，几秒就知道点选灵不灵</string>
     <string name="jump_appinfo_title">应用信息</string>
-    <string name="jump_appinfo_sub">一键直达 → 右上角 ⋮ → 允许受限制的设置（更新后要重开）</string>
+    <string name="jump_appinfo_sub">直达系统应用信息页（通知开关等）</string>
     <!-- v10.6：受限制设置三步指引（系统没给直达开关的入口，只能跳应用信息页） -->
     <string name="jump_battery_title">电池优化</string>
-    <string name="jump_battery_sub">点我直接允许后台运行，防止服务被系统杀掉</string>
+    <string name="jump_battery_sub">允许后台运行，VPN 与下载更稳定</string>
     <!-- v10.7：电池优化白名单实时状态 -->
     <string name="battery_allowed">已允许后台运行 ✓（点我可改）</string>
     <string name="battery_not_allowed">还没允许后台运行，点我去允许</string>
@@ -144,7 +139,6 @@
     <string name="notif_done">下载完成</string>
     <string name="notif_done_hint">点我打开文件</string>
     <string name="notif_failed_hint">下载失败，点我去重试</string>
-    <string name="a11y_off">状态：未开启（自动点选不工作）</string>
     <string name="addr_top">顶部 ›</string>
     <string name="addr_bottom">底部 ›</string>
     <string name="addr_pos_title">地址栏位置</string>
@@ -156,13 +150,9 @@
     <string name="section_search">搜索引擎</string>
     <string name="section_wallpaper">壁纸</string>
     <string name="section_privacy">隐私和安全</string>
-    <string name="section_a11y">无障碍</string>
-    <string name="auto_tap">自动点选验证</string>
-    <string name="go_enable">去开启</string>
     <string name="default_browser">设为默认浏览器</string>
     <string name="about">关于</string>
     <string name="clear_data">清除浏览数据</string>
-    <string name="accessibility_description">自动点选 Cloudflare 人机验证复选框，省去手动点勾的时间</string>
     <!-- 内置下载器 -->
     <string name="dl_title">下载</string>
     <string name="dl_empty">还没有下载任务\n在播放器里点「下载视频」开始下载</string>
@@ -201,20 +191,15 @@
     <string name="player_speed">倍速</string>
     <string name="player_pip">画中画</string>
     <string name="pip_failed">当前设备不支持画中画</string>
-    <!-- 无障碍诊断 -->
-    <string name="a11y_off_tap">未开启（点我查看诊断）</string>
-    <string name="a11y_diag_title">无障碍诊断</string>
-    <string name="a11y_diag_master">系统无障碍总开关</string>
-    <string name="a11y_diag_in_list">系统名单中有本服务</string>
-    <string name="a11y_diag_running">正在运行的服务中有本服务</string>
-    <string name="a11y_diag_alive">服务最后一次存活</string>
-    <string name="a11y_diag_unbind">服务最后一次断开</string>
-    <string name="a11y_diag_never">从未</string>
-    <string name="a11y_diag_yes">是</string>
-    <string name="a11y_diag_no">否</string>
-    <string name="a11y_diag_raw">原始名单</string>
-    <string name="a11y_diag_widget">验证挂件最后出现</string>
-    <string name="a11y_diag_tap">最后一次点选</string>
-    <string name="a11y_diag_ok">（成功）</string>
-    <string name="a11y_diag_fail">（失败）</string>
+    <string name="section_vpn">VPN（内置）</string>
+    <string name="vpn_title">加密隧道</string>
+    <string name="vpn_off">未连接</string>
+    <string name="vpn_connecting">连接中…</string>
+    <string name="vpn_registering">正在注册账号…</string>
+    <string name="vpn_on">已连接 ✓（浏览器流量经加密隧道）</string>
+    <string name="vpn_connect">一键开启</string>
+    <string name="vpn_disconnect">断开</string>
+    <string name="vpn_reg_fail">注册失败，换个网络再试</string>
+    <string name="vpn_conn_fail">连接失败，稍后再试</string>
+    <string name="licenses_title">开源许可</string>
 </resources>
