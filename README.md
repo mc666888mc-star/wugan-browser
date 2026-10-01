@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v11.0（versionCode 24）
+- 当前版本 / Current version：v11.1（versionCode 25）
 - 开源协议 / License：GPLv3
 
 ---
@@ -75,6 +75,10 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v11.1（指引文案修精确）
+
+- 「允许受限制的设置」三步指引：明确说"标题栏右上角"，别在页面内容里找；并提醒在应用详情第一页操作
 
 #### v11.0（播放器新界面 + 画中画）
 
@@ -268,6 +272,10 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v11.1 (clearer guide text)
+
+- Restricted-settings 3-step guide now says "title bar, top right" explicitly, and reminds you to stay on the app-info main page
 
 #### v11.0 (new player UI + picture-in-picture)
 

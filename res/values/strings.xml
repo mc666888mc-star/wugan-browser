@@ -132,7 +132,7 @@
     <string name="jump_appinfo_sub">一键直达 → 右上角 ⋮ → 允许受限制的设置（更新后要重开）</string>
     <!-- v10.6：受限制设置三步指引（系统没给直达开关的入口，只能跳应用信息页） -->
     <string name="restricted_guide_title">打开「允许受限制的设置」</string>
-    <string name="restricted_guide_msg">跳过去之后，按这三步点：\n\n1. 点右上角 ⋮（三个点）\n2. 点「允许受限制的设置」\n3. 点「允许」\n\n开完直接返回，这里的状态会自动刷新。</string>
+    <string name="restricted_guide_msg">跳过去之后，按这三步点：\n\n1. 看最顶上的标题栏：「← 应用详情」同一行、最右边，有个竖着的 ⋮（三个点，很小）\n2. 点「允许受限制的设置」\n3. 点「允许」\n\n（要在应用详情第一页操作，别点进「权限管理」里面找）开完直接返回，这里的状态会自动刷新。</string>
     <string name="restricted_guide_go">去开</string>
     <string name="jump_battery_title">电池优化</string>
     <string name="jump_battery_sub">点我直接允许后台运行，防止服务被系统杀掉</string>
