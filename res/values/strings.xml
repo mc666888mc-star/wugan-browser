@@ -168,4 +168,16 @@
     <string name="download_video">下载视频</string>
     <string name="player_lock">锁定</string>
     <string name="player_unlock">解锁</string>
+    <!-- 无障碍诊断 -->
+    <string name="a11y_off_tap">未开启（点我查看诊断）</string>
+    <string name="a11y_diag_title">无障碍诊断</string>
+    <string name="a11y_diag_master">系统无障碍总开关</string>
+    <string name="a11y_diag_in_list">系统名单中有本服务</string>
+    <string name="a11y_diag_running">正在运行的服务中有本服务</string>
+    <string name="a11y_diag_alive">服务最后一次存活</string>
+    <string name="a11y_diag_unbind">服务最后一次断开</string>
+    <string name="a11y_diag_never">从未</string>
+    <string name="a11y_diag_yes">是</string>
+    <string name="a11y_diag_no">否</string>
+    <string name="a11y_diag_raw">原始名单</string>
 </resources>

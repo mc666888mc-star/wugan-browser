@@ -1,11 +1,14 @@
 package com.miku.wugan;
 
 import android.accessibilityservice.AccessibilityService;
+import android.content.SharedPreferences;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -58,9 +61,36 @@ public class ChallengeTapService extends AccessibilityService {
     private long lastTapMs = 0;
     private int lastWindowId = -1;
 
+    /** 诊断用心跳：服务每次成功存活都写一条，设置页能看到 */
+    static final String A11Y_PREFS = "wugan_a11y";
+    static final String KEY_LAST_CONNECT = "last_connect";
+    static final String KEY_LAST_UNBIND = "last_unbind";
+
+    static String formatTime(long ms) {
+        if (ms <= 0) {
+            return null;
+        }
+        return new SimpleDateFormat("MM-dd HH:mm:ss", Locale.getDefault())
+                .format(new Date(ms));
+    }
+
     @Override
     public void onServiceConnected() {
         Log.i(TAG, "service connected");
+        getSharedPreferences(A11Y_PREFS, MODE_PRIVATE)
+                .edit()
+                .putLong(KEY_LAST_CONNECT, System.currentTimeMillis())
+                .apply();
+    }
+
+    @Override
+    public boolean onUnbind(android.content.Intent intent) {
+        Log.i(TAG, "service unbound");
+        getSharedPreferences(A11Y_PREFS, MODE_PRIVATE)
+                .edit()
+                .putLong(KEY_LAST_UNBIND, System.currentTimeMillis())
+                .apply();
+        return super.onUnbind(intent);
     }
 
     @Override

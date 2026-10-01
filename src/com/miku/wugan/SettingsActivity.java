@@ -2,6 +2,7 @@ package com.miku.wugan;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.accessibility.AccessibilityManager;
 import android.webkit.CookieManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -18,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * v5：Edge 风格分组设置页。
@@ -155,6 +158,13 @@ public class SettingsActivity extends Activity {
                 startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
             }
         });
+        // 点无障碍行弹出诊断（系统名单原文 + 服务心跳），方便排查"开了却显示未开启"
+        findViewById(R.id.a11y_row).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showA11yDiag();
+            }
+        });
 
         // ---- 设为默认浏览器 ----
         findViewById(R.id.default_browser_row).setOnClickListener(new View.OnClickListener() {
@@ -181,7 +191,8 @@ public class SettingsActivity extends Activity {
     protected void onResume() {
         super.onResume();
         boolean on = isA11yServiceOn();
-        a11yStatus.setText(on ? getString(R.string.a11y_on) : getString(R.string.a11y_off));
+        a11yStatus.setText(on ? getString(R.string.a11y_on)
+                : getString(R.string.a11y_off_tap));
         refreshSettingsValues();
     }
 
@@ -334,6 +345,16 @@ public class SettingsActivity extends Activity {
 
     /** 无障碍服务是否已启用：系统开关开 + 本服务在已启用列表里 */
     private boolean isA11yServiceOn() {
+        return isInSecureList() || isInRunningList();
+    }
+
+    /** 本服务的 flatten 名：com.miku.wugan/com.miku.wugan.ChallengeTapService */
+    private String myFlattenName() {
+        return new ComponentName(this, ChallengeTapService.class).flattenToString();
+    }
+
+    /** 信号一：系统 Settings.Secure 名单里有没有我 */
+    private boolean isInSecureList() {
         int enabled = 0;
         try {
             enabled = Settings.Secure.getInt(getContentResolver(),
@@ -349,9 +370,9 @@ public class SettingsActivity extends Activity {
         if (services == null) {
             return false;
         }
-        // 系统存的是 flatten 后的完整类名（com.miku.wugan/com.miku.wugan.ChallengeTapService），
-        // 用 ComponentName 逐个比对；之前用 "/.ChallengeTapService" 短名 contains 永远匹配不上
-        String me = new ComponentName(this, ChallengeTapService.class).flattenToString();
+        // 系统存的是 flatten 后的完整类名，用 ComponentName 逐个比对；
+        // 之前用 "/.ChallengeTapService" 短名 contains 永远匹配不上（v8.5 修过）
+        String me = myFlattenName();
         TextUtils.SimpleStringSplitter splitter = new TextUtils.SimpleStringSplitter(':');
         splitter.setString(services);
         while (splitter.hasNext()) {
@@ -360,6 +381,72 @@ public class SettingsActivity extends Activity {
             }
         }
         return false;
+    }
+
+    /** 信号二：AccessibilityManager 正在运行的服务名单里有没有我（防某些 ROM 名单写法怪异） */
+    private boolean isInRunningList() {
+        try {
+            AccessibilityManager am = (AccessibilityManager)
+                    getSystemService(ACCESSIBILITY_SERVICE);
+            if (am == null) {
+                return false;
+            }
+            String me = myFlattenName();
+            List<AccessibilityServiceInfo> running = am
+                    .getEnabledAccessibilityServiceList(
+                            AccessibilityServiceInfo.FEEDBACK_ALL_MASK);
+            if (running == null) {
+                return false;
+            }
+            for (AccessibilityServiceInfo info : running) {
+                if (me.equals(info.getId())) {
+                    return true;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return false;
+    }
+
+    /** 无障碍诊断对话框：把系统看到的原始状态都摆出来，截图发开发者就能定位 */
+    private void showA11yDiag() {
+        int master = 0;
+        try {
+            master = Settings.Secure.getInt(getContentResolver(),
+                    Settings.Secure.ACCESSIBILITY_ENABLED);
+        } catch (Exception ignored) {
+        }
+        String raw = Settings.Secure.getString(getContentResolver(),
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        SharedPreferences ap = getSharedPreferences(
+                ChallengeTapService.A11Y_PREFS, MODE_PRIVATE);
+        String alive = ChallengeTapService.formatTime(
+                ap.getLong(ChallengeTapService.KEY_LAST_CONNECT, 0));
+        String unbind = ChallengeTapService.formatTime(
+                ap.getLong(ChallengeTapService.KEY_LAST_UNBIND, 0));
+
+        String yes = getString(R.string.a11y_diag_yes);
+        String no = getString(R.string.a11y_diag_no);
+        String never = getString(R.string.a11y_diag_never);
+        StringBuilder sb = new StringBuilder();
+        sb.append(getString(R.string.a11y_diag_master)).append(": ")
+                .append(master == 1 ? yes : no).append("\n");
+        sb.append(getString(R.string.a11y_diag_in_list)).append(": ")
+                .append(isInSecureList() ? yes : no).append("\n");
+        sb.append(getString(R.string.a11y_diag_running)).append(": ")
+                .append(isInRunningList() ? yes : no).append("\n");
+        sb.append(getString(R.string.a11y_diag_alive)).append(": ")
+                .append(alive != null ? alive : never).append("\n");
+        sb.append(getString(R.string.a11y_diag_unbind)).append(": ")
+                .append(unbind != null ? unbind : never).append("\n");
+        sb.append(getString(R.string.a11y_diag_raw)).append(":\n")
+                .append(raw != null ? raw : "-");
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.a11y_diag_title)
+                .setMessage(sb.toString())
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
     }
 
     @Override

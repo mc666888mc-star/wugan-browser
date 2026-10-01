@@ -168,4 +168,16 @@
     <string name="download_video">Download video</string>
     <string name="player_lock">Lock</string>
     <string name="player_unlock">Unlock</string>
+    <!-- Accessibility diagnostics -->
+    <string name="a11y_off_tap">Off (tap for diagnostics)</string>
+    <string name="a11y_diag_title">Accessibility diagnostics</string>
+    <string name="a11y_diag_master">Master accessibility switch</string>
+    <string name="a11y_diag_in_list">In system enabled list</string>
+    <string name="a11y_diag_running">In running services list</string>
+    <string name="a11y_diag_alive">Service last alive</string>
+    <string name="a11y_diag_unbind">Service last unbound</string>
+    <string name="a11y_diag_never">Never</string>
+    <string name="a11y_diag_yes">Yes</string>
+    <string name="a11y_diag_no">No</string>
+    <string name="a11y_diag_raw">Raw list</string>
 </resources>

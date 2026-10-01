@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v10.0（versionCode 15）
+- 当前版本 / Current version：v10.1（versionCode 16）
 - 开源协议 / License：GPLv3
 
 ---
@@ -75,6 +75,12 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v10.1（无障碍诊断）
+
+- 自动点选不工作排查：服务加存活心跳（SharedPreferences 记录最后一次连接/断开时间）；设置页点"无障碍"行弹出诊断框（总开关/系统名单/运行中名单/心跳/原始名单），截图就能定位是"没开上"还是"开了没存活"
+- 状态检测改双信号：系统名单 或 运行中服务名单命中任一即算已开启（防某些 ROM 名单写法怪异）
+- 事件类型加 `typeWindowStateChanged`，挑战页整窗切换时也能抓到
 
 #### v10.0（播放器升级）
 
@@ -212,6 +218,12 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v10.1 (accessibility diagnostics)
+
+- Auto-tap troubleshooting: the service now writes a heartbeat (last connect/unbind timestamps); tapping the Accessibility row in Settings opens a diagnostics dialog (master switch, system list, running list, heartbeat, raw list) — a screenshot is enough to tell "not enabled" from "enabled but dead"
+- Status check now uses two signals: enabled if found in either the system list or the running-services list
+- Added `typeWindowStateChanged` so whole-window challenge transitions are caught too
 
 #### v10.0 (player upgrade)
 
