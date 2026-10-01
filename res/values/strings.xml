@@ -165,6 +165,12 @@
     <string name="dl_need_perm">需要存储权限才能下载，请先授权</string>
     <string name="dl_enqueued">已加入下载：%1$s</string>
     <string name="dl_no_app">没有能打开这个文件的应用</string>
+    <string name="dl_more">更多操作</string>
+    <string name="dl_open_folder">在文件管理器中打开</string>
+    <string name="dl_rename">重命名</string>
+    <string name="dl_rename_ok">已重命名</string>
+    <string name="dl_rename_failed">重命名失败</string>
+    <string name="dl_no_folder">打不开系统文件夹</string>
     <string name="download_video">下载视频</string>
     <string name="player_lock">锁定</string>
     <string name="player_unlock">解锁</string>

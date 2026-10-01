@@ -1321,7 +1321,8 @@ public class MainActivity extends Activity {
                     return;
                 }
                 Downloader.Task task =
-                        Downloader.get(MainActivity.this).enqueue(url);
+                        Downloader.get(MainActivity.this).enqueue(
+                                url, contentDisposition, mimetype);
                 Toast.makeText(MainActivity.this,
                         getString(R.string.dl_enqueued, task.fileName),
                         Toast.LENGTH_SHORT).show();

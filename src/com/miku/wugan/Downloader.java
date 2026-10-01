@@ -42,7 +42,7 @@ import java.util.concurrent.Executors;
 public class Downloader {
 
     private static final String TAG = "WuganDL";
-    private static final String DIR_NAME = "无感浏览器";
+    static final String DIR_NAME = "无感浏览器";
     private static final int CONN_TIMEOUT = 15000;
     private static final int READ_TIMEOUT = 30000;
     // 桌面 Chrome Mobile UA：部分 CDN 会拦 Java 默认 UA
@@ -103,11 +103,21 @@ public class Downloader {
 
     /** 入队一个下载，返回 Task（已在线程池排队）。 */
     public Task enqueue(String url) {
+        return enqueue(url, null, null);
+    }
+
+    /**
+     * v10.3：contentDisposition / mimetype 来自 WebView 的 DownloadListener
+     *（比如下载站的 attachment; filename="app.apk"），有就传，没有传 null。
+     * 之前直接扔掉它们、只拿 URL 猜名字，没文件名的 URL 就猜出 .bin —— 这就是
+     * "APK 变 bin、别的 App 打不开"的根因。
+     */
+    public Task enqueue(String url, String contentDisposition, String mimetype) {
         Task t = new Task();
         t.url = url;
         String lower = url.toLowerCase(Locale.ROOT).split("[?#]")[0];
         t.hls = lower.endsWith(".m3u8");
-        String guess = URLUtil.guessFileName(url, null, null);
+        String guess = URLUtil.guessFileName(url, contentDisposition, mimetype);
         if (guess == null || guess.isEmpty()) {
             guess = "download_" + System.currentTimeMillis();
         }
@@ -118,6 +128,11 @@ public class Downloader {
             t.mime = "video/mp2t";
         } else {
             t.mime = mimeFor(guess);
+            // 后缀猜不出类型时，信 WebView 给的 mimetype
+            if ("application/octet-stream".equals(t.mime)
+                    && mimetype != null && mimetype.contains("/")) {
+                t.mime = mimetype.split(";")[0].trim();
+            }
         }
         t.fileName = guess;
         tasks.add(0, t);
@@ -160,6 +175,48 @@ public class Downloader {
             tasks.remove(t);
         }
         // DOWNLOADING：Worker 收尾时删文件并移除
+    }
+
+    /** v10.3：重命名已完成任务的文件，返回是否成功（仅 DONE 任务调用） */
+    public boolean rename(Task t, String newName) {
+        if (t.state != Task.State.DONE || t.target == null) {
+            return false;
+        }
+        newName = newName.replaceAll("[\\\\/:*?\"<>|]", "_").trim();
+        if (newName.isEmpty()) {
+            return false;
+        }
+        // 没写后缀就保留原后缀（省得把 .apk 改没了装不上）
+        if (newName.lastIndexOf('.') < 0) {
+            int dot = t.fileName.lastIndexOf('.');
+            if (dot > 0) {
+                newName += t.fileName.substring(dot);
+            }
+        }
+        try {
+            if (Build.VERSION.SDK_INT >= 29) {
+                ContentValues v = new ContentValues();
+                v.put(MediaStore.Downloads.DISPLAY_NAME, newName);
+                v.put(MediaStore.Downloads.MIME_TYPE, mimeFor(newName));
+                int rows = appCtx.getContentResolver()
+                        .update(Uri.parse(t.target), v, null, null);
+                if (rows <= 0) {
+                    return false;
+                }
+            } else {
+                File old = new File(t.target);
+                File nf = new File(old.getParent(), newName);
+                if (!old.renameTo(nf)) {
+                    return false;
+                }
+                t.target = nf.getAbsolutePath();
+            }
+            t.fileName = newName;
+            t.mime = mimeFor(newName);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     void removeTask(Task t) {
@@ -250,6 +307,25 @@ public class Downloader {
             long len = c.getContentLengthLong();
             t.totalUnits = len >= 0 ? len + start : -1;
             t.doneBytes = start;
+
+            // v10.3：新任务用响应头纠正文件名（Content-Disposition / Content-Type）。
+            // WebView 那边没拿到真名、URL 里又没文件名时，全靠这次兜底。
+            if (start == 0 && !t.hls) {
+                String better = deriveFileName(c, t.url);
+                if (better != null && !better.equals(t.fileName)) {
+                    t.fileName = better;
+                    t.mime = mimeFor(better);
+                    if (mediaStore) {
+                        ContentValues mv = new ContentValues();
+                        mv.put(MediaStore.Downloads.DISPLAY_NAME, better);
+                        mv.put(MediaStore.Downloads.MIME_TYPE, t.mime);
+                        appCtx.getContentResolver().update(uri, mv, null, null);
+                    } else {
+                        file = new File(file.getParent(), better);
+                        t.target = file.getAbsolutePath();
+                    }
+                }
+            }
 
             OutputStream out;
             if (mediaStore) {
@@ -503,6 +579,113 @@ public class Downloader {
                 throw new Exception("cannot create dir");
             }
             return new File(dir, t.fileName);
+        }
+
+        /**
+         * v10.3：从响应头推断更准的文件名。
+         * 1) Content-Disposition 的 filename；2) URL 路径最后一段；
+         * 3) 没后缀就按 Content-Type 补一个。实在推断不出返回 null（保持原名）。
+         */
+        private String deriveFileName(HttpURLConnection c, String url) {
+            String name = null;
+            String cd = c.getHeaderField("Content-Disposition");
+            if (cd != null) {
+                name = parseDispositionName(cd);
+            }
+            if (name == null || name.isEmpty()) {
+                try {
+                    String path = new URL(url).getPath();
+                    int slash = path.lastIndexOf('/');
+                    String seg = slash >= 0 ? path.substring(slash + 1) : path;
+                    try {
+                        seg = java.net.URLDecoder.decode(seg, "UTF-8");
+                    } catch (Exception ignored) {}
+                    if (seg != null && !seg.isEmpty()
+                            && !seg.equalsIgnoreCase("download")
+                            && !seg.equalsIgnoreCase("downloadfile")) {
+                        name = seg;
+                    }
+                } catch (Exception ignored) {}
+            }
+            if (name == null || name.isEmpty()) {
+                return null;
+            }
+            name = name.replaceAll("[\\\\/:*?\"<>|]", "_");
+            if (name.lastIndexOf('.') < 0) {
+                String ext = extForMime(c.getContentType());
+                if (ext != null) {
+                    name += "." + ext;
+                }
+            }
+            return name;
+        }
+
+        private static String parseDispositionName(String cd) {
+            try {
+                java.util.regex.Matcher m = java.util.regex.Pattern
+                        .compile("filename\\*\\s*=\\s*([^;]+)").matcher(cd);
+                if (m.find()) {
+                    String v = m.group(1).trim();
+                    int qi = v.indexOf("''");
+                    String enc = qi > 0 ? v.substring(0, qi) : "UTF-8";
+                    String val = qi > 0 ? v.substring(qi + 2) : v;
+                    return java.net.URLDecoder.decode(val, enc);
+                }
+                m = java.util.regex.Pattern
+                        .compile("filename\\s*=\\s*\"([^\"]+)\"").matcher(cd);
+                if (m.find()) {
+                    return m.group(1);
+                }
+                m = java.util.regex.Pattern
+                        .compile("filename\\s*=\\s*([^;\\s]+)").matcher(cd);
+                if (m.find()) {
+                    return m.group(1).trim();
+                }
+            } catch (Exception ignored) {}
+            return null;
+        }
+
+        /** v10.3：Content-Type → 后缀；未知类型返回 null（不硬猜 .bin） */
+        private static String extForMime(String contentType) {
+            if (contentType == null) {
+                return null;
+            }
+            String ct = contentType.split(";")[0].trim()
+                    .toLowerCase(Locale.ROOT);
+            if (ct.equals("application/vnd.android.package-archive")) {
+                return "apk";
+            }
+            if (ct.equals("video/mp4")) {
+                return "mp4";
+            }
+            if (ct.equals("video/webm")) {
+                return "webm";
+            }
+            if (ct.equals("video/x-matroska")) {
+                return "mkv";
+            }
+            if (ct.equals("audio/mpeg")) {
+                return "mp3";
+            }
+            if (ct.equals("image/jpeg")) {
+                return "jpg";
+            }
+            if (ct.equals("image/png")) {
+                return "png";
+            }
+            if (ct.equals("image/webp")) {
+                return "webp";
+            }
+            if (ct.equals("application/pdf")) {
+                return "pdf";
+            }
+            if (ct.equals("application/zip")) {
+                return "zip";
+            }
+            if (ct.equals("text/plain")) {
+                return "txt";
+            }
+            return null;
         }
     }
 

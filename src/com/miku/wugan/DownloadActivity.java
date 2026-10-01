@@ -2,18 +2,26 @@ package com.miku.wugan;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.DocumentsContract;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,8 +30,9 @@ import java.io.File;
 import java.util.List;
 
 /**
- * 内置下载器界面：文件名 + 进度条 + 状态行（百分比/速度/剩余时间），
- * 支持暂停/继续/取消；完成后可打开或删除。
+ * 内置下载器界面：文件名 + 进度条 + 状态行（百分比/速度/剩余时间）。
+ * 每行右侧 ⋮ 菜单：下载中=暂停/取消，暂停=继续/取消，失败=重试/删除，
+ * 完成=打开/在文件管理器中打开/重命名/删除。
  * 后台每 500ms 刷新一次（读 Task 的 volatile 字段）。
  */
 public class DownloadActivity extends Activity {
@@ -119,15 +128,13 @@ public class DownloadActivity extends Activity {
                 h.name = convertView.findViewById(R.id.dl_name);
                 h.progress = convertView.findViewById(R.id.dl_progress);
                 h.status = convertView.findViewById(R.id.dl_status);
-                h.toggle = convertView.findViewById(R.id.dl_btn_toggle);
-                h.cancel = convertView.findViewById(R.id.dl_btn_cancel);
+                h.more = convertView.findViewById(R.id.dl_btn_more);
                 convertView.setTag(h);
             } else {
                 h = (ViewHolder) convertView.getTag();
             }
             final Downloader.Task t =
                     Downloader.get(DownloadActivity.this).tasks().get(position);
-            final Downloader dl = Downloader.get(DownloadActivity.this);
 
             h.name.setText(t.fileName);
 
@@ -136,57 +143,12 @@ public class DownloadActivity extends Activity {
             h.progress.setProgress(Math.max(0, pct));
             h.status.setText(statusText(t));
 
-            // 按钮按状态切换
-            switch (t.state) {
-                case DOWNLOADING:
-                case QUEUED:
-                    h.toggle.setText(R.string.dl_pause);
-                    h.toggle.setOnClickListener(new View.OnClickListener() {
-                        @Override public void onClick(View v) { dl.pause(t); }
-                    });
-                    h.cancel.setText(R.string.dl_cancel);
-                    h.cancel.setOnClickListener(new View.OnClickListener() {
-                        @Override public void onClick(View v) { dl.cancel(t); }
-                    });
-                    h.cancel.setVisibility(View.VISIBLE);
-                    break;
-                case PAUSED:
-                    h.toggle.setText(R.string.dl_resume);
-                    h.toggle.setOnClickListener(new View.OnClickListener() {
-                        @Override public void onClick(View v) { dl.resume(t); }
-                    });
-                    h.cancel.setText(R.string.dl_cancel);
-                    h.cancel.setOnClickListener(new View.OnClickListener() {
-                        @Override public void onClick(View v) { dl.cancel(t); }
-                    });
-                    h.cancel.setVisibility(View.VISIBLE);
-                    break;
-                case FAILED:
-                    h.toggle.setText(R.string.dl_retry);
-                    h.toggle.setOnClickListener(new View.OnClickListener() {
-                        @Override public void onClick(View v) { dl.resume(t); }
-                    });
-                    h.cancel.setText(R.string.dl_cancel);
-                    h.cancel.setOnClickListener(new View.OnClickListener() {
-                        @Override public void onClick(View v) { dl.cancel(t); }
-                    });
-                    h.cancel.setVisibility(View.VISIBLE);
-                    break;
-                case DONE:
-                    h.toggle.setText(R.string.dl_open);
-                    h.toggle.setOnClickListener(new View.OnClickListener() {
-                        @Override public void onClick(View v) { openFile(t); }
-                    });
-                    h.cancel.setText(R.string.dl_delete);
-                    h.cancel.setOnClickListener(new View.OnClickListener() {
-                        @Override public void onClick(View v) { dl.cancel(t); }
-                    });
-                    h.cancel.setVisibility(View.VISIBLE);
-                    break;
-                default:
-                    h.cancel.setVisibility(View.GONE);
-                    break;
-            }
+            h.more.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showMenu(v, t);
+                }
+            });
             return convertView;
         }
 
@@ -247,25 +209,141 @@ public class DownloadActivity extends Activity {
             TextView name;
             ProgressBar progress;
             TextView status;
-            Button toggle;
-            Button cancel;
+            ImageButton more;
         }
     }
 
+    // ---------------- ⋮ 菜单 ----------------
+
+    private void showMenu(View anchor, final Downloader.Task t) {
+        final Downloader dl = Downloader.get(this);
+        PopupMenu menu = new PopupMenu(this, anchor);
+        Menu m = menu.getMenu();
+        switch (t.state) {
+            case DOWNLOADING:
+            case QUEUED:
+                m.add(0, 1, 0, R.string.dl_pause);
+                m.add(0, 2, 0, R.string.dl_cancel);
+                break;
+            case PAUSED:
+                m.add(0, 3, 0, R.string.dl_resume);
+                m.add(0, 2, 0, R.string.dl_cancel);
+                break;
+            case FAILED:
+                m.add(0, 4, 0, R.string.dl_retry);
+                m.add(0, 5, 0, R.string.dl_delete);
+                break;
+            case DONE:
+                m.add(0, 6, 0, R.string.dl_open);
+                m.add(0, 7, 0, R.string.dl_open_folder);
+                m.add(0, 8, 0, R.string.dl_rename);
+                m.add(0, 5, 0, R.string.dl_delete);
+                break;
+            default:
+                return;
+        }
+        menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case 1:
+                        dl.pause(t);
+                        return true;
+                    case 2: // 取消（下载中/暂停中）：停掉并移除
+                    case 5: // 删除（失败/完成）：删文件并移除
+                        dl.cancel(t);
+                        return true;
+                    case 3:
+                    case 4:
+                        dl.resume(t);
+                        return true;
+                    case 6:
+                        openFile(t);
+                        return true;
+                    case 7:
+                        openFolder();
+                        return true;
+                    case 8:
+                        renameDialog(t);
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        });
+        menu.show();
+    }
+
+    // ---------------- 打开 / 文件夹 / 重命名 ----------------
+
     private void openFile(Downloader.Task t) {
         try {
-            Intent i = new Intent(Intent.ACTION_VIEW);
+            Uri uri;
             if (Build.VERSION.SDK_INT >= 29) {
-                i.setDataAndType(Uri.parse(t.target), t.mime);
-                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                uri = Uri.parse(t.target);
             } else {
-                i.setDataAndType(Uri.fromFile(new File(t.target)), t.mime);
+                // file:// 会被系统直接拦（FileUriExposedException），走自己的 provider
+                uri = SimpleFileProvider.uriForFile(this, new File(t.target));
             }
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(i);
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setDataAndType(uri, t.mime);
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                startActivity(i);
+            } catch (ActivityNotFoundException e) {
+                // 精确 MIME 没应用接（比如之前下错的 octet-stream），退到 */* 让用户选
+                i.setDataAndType(uri, "*/*");
+                startActivity(i);
+            }
         } catch (Exception e) {
             Toast.makeText(this, getString(R.string.dl_no_app),
                     Toast.LENGTH_SHORT).show();
         }
+    }
+
+    /** 在系统文件管理器里打开 Download/无感浏览器 文件夹。 */
+    private void openFolder() {
+        try {
+            Uri uri = DocumentsContract.buildDocumentUri(
+                    "com.android.externalstorage.documents",
+                    "primary:Download/" + Downloader.DIR_NAME);
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(uri);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
+        } catch (Exception e) {
+            Toast.makeText(this, getString(R.string.dl_no_folder),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void renameDialog(final Downloader.Task t) {
+        final EditText input = new EditText(this);
+        input.setText(t.fileName);
+        input.selectAll();
+        int pad = (int) (16 * getResources().getDisplayMetrics().density);
+        input.setPadding(pad, pad, pad, pad);
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.dl_rename)
+                .setView(input)
+                .setPositiveButton(android.R.string.ok,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface d, int w) {
+                                boolean ok = Downloader.get(DownloadActivity.this)
+                                        .rename(t,
+                                                input.getText().toString());
+                                Toast.makeText(DownloadActivity.this,
+                                        ok ? R.string.dl_rename_ok
+                                                : R.string.dl_rename_failed,
+                                        Toast.LENGTH_SHORT).show();
+                                if (adapter != null) {
+                                    adapter.notifyDataSetChanged();
+                                }
+                            }
+                        })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 }

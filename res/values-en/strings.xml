@@ -165,6 +165,12 @@
     <string name="dl_need_perm">Storage permission is required to download</string>
     <string name="dl_enqueued">Added to downloads: %1$s</string>
     <string name="dl_no_app">No app can open this file</string>
+    <string name="dl_more">More options</string>
+    <string name="dl_open_folder">Open in file manager</string>
+    <string name="dl_rename">Rename</string>
+    <string name="dl_rename_ok">Renamed</string>
+    <string name="dl_rename_failed">Rename failed</string>
+    <string name="dl_no_folder">Can\'t open system folder</string>
     <string name="download_video">Download video</string>
     <string name="player_lock">Lock</string>
     <string name="player_unlock">Unlock</string>
