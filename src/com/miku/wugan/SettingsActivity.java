@@ -2,11 +2,13 @@ package com.miku.wugan;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.widget.Button;
@@ -344,8 +346,20 @@ public class SettingsActivity extends Activity {
         }
         String services = Settings.Secure.getString(getContentResolver(),
                 Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-        return services != null
-                && services.contains(getPackageName() + "/.ChallengeTapService");
+        if (services == null) {
+            return false;
+        }
+        // 系统存的是 flatten 后的完整类名（com.miku.wugan/com.miku.wugan.ChallengeTapService），
+        // 用 ComponentName 逐个比对；之前用 "/.ChallengeTapService" 短名 contains 永远匹配不上
+        String me = new ComponentName(this, ChallengeTapService.class).flattenToString();
+        TextUtils.SimpleStringSplitter splitter = new TextUtils.SimpleStringSplitter(':');
+        splitter.setString(services);
+        while (splitter.hasNext()) {
+            if (me.equals(splitter.next())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

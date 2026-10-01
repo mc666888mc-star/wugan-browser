@@ -123,16 +123,10 @@ public class ChallengeTapService extends AccessibilityService {
         return false;
     }
 
-    /** 找到复选框候选就点，点完返回 true */
+    /** 找到复选框候选就点，点完返回 true（先深后浅：优先点最里层的可点节点） */
     private boolean tapCheckbox(AccessibilityNodeInfo node, boolean challengeDetected) {
         if (node == null) {
             return false;
-        }
-        if (node.isClickable() && isCheckboxCandidate(node, challengeDetected)) {
-            lastTapMs = SystemClock.uptimeMillis();
-            boolean ok = node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-            Log.i(TAG, "auto-tap checkbox, result=" + ok);
-            return true;
         }
         int n = node.getChildCount();
         for (int i = 0; i < n; i++) {
@@ -145,27 +139,68 @@ public class ChallengeTapService extends AccessibilityService {
                 return true;
             }
         }
+        if (node.isClickable() && isCheckboxCandidate(node, challengeDetected)) {
+            lastTapMs = SystemClock.uptimeMillis();
+            boolean ok = node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+            Log.i(TAG, "auto-tap checkbox, result=" + ok);
+            return true;
+        }
         return false;
     }
 
     /**
-     * 可点节点判定（宽松版）：
-     * (a) 文本/无障碍描述命中复选框关键词；或
-     * (b) 类名含 CheckBox 且当前屏已判定为验证页。
+     * 可点节点判定：
+     * (a) 自身文本/无障碍描述命中复选框关键词；或
+     * (b) 可点节点子树里含复选框关键词（Turnstile 内嵌挂件把"请验证您是真人"放在
+     *     可点 wrapper 的子 span 上，自己身上没文本，之前永远点不到）；或
+     * (c) 类名含 CheckBox 且当前屏已判定为验证页。
      */
     private boolean isCheckboxCandidate(AccessibilityNodeInfo node, boolean challengeDetected) {
         String hay = nodeText(node);
-        if (hay != null) {
-            String lower = hay.toLowerCase(Locale.ROOT);
-            for (String h : CHECKBOX_HINTS) {
-                if (lower.contains(h)) {
-                    return true;
-                }
-            }
+        if (hay != null && containsAnyLower(hay, CHECKBOX_HINTS)) {
+            return true;
+        }
+        if (node.isClickable() && subtreeHasHint(node, 4)) {
+            return true;
         }
         if (challengeDetected) {
             CharSequence cls = node.getClassName();
             if (cls != null && cls.toString().contains("CheckBox")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean containsAnyLower(String hay, String[] hints) {
+        String lower = hay.toLowerCase(Locale.ROOT);
+        for (String h : hints) {
+            if (lower.contains(h)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 子树（限深）里有没有复选框关键词 */
+    private boolean subtreeHasHint(AccessibilityNodeInfo node, int depth) {
+        if (node == null || depth < 0) {
+            return false;
+        }
+        int n = node.getChildCount();
+        for (int i = 0; i < n; i++) {
+            AccessibilityNodeInfo child = node.getChild(i);
+            boolean found = false;
+            if (child != null) {
+                String hay = nodeText(child);
+                if (hay != null && containsAnyLower(hay, CHECKBOX_HINTS)) {
+                    found = true;
+                } else {
+                    found = subtreeHasHint(child, depth - 1);
+                }
+                child.recycle();
+            }
+            if (found) {
                 return true;
             }
         }
