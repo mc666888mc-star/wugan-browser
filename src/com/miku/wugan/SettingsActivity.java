@@ -166,14 +166,27 @@ public class SettingsActivity extends Activity {
                 showA11yDiag();
             }
         });
-        // v10.4：一键直达系统设置，少走弯路
+        // v10.6：点"应用信息"先弹三步指引——系统没给直达"允许受限制的设置"
+        // 开关的入口，只能跳到应用信息页，剩下的按指引点两下
         findViewById(R.id.appinfo_row).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 应用信息页：右上角 ⋮ → 允许受限制的设置（更新后要重开）
-                Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                i.setData(Uri.parse("package:" + getPackageName()));
-                startActivity(i);
+                new AlertDialog.Builder(SettingsActivity.this)
+                        .setTitle(R.string.restricted_guide_title)
+                        .setMessage(R.string.restricted_guide_msg)
+                        .setPositiveButton(R.string.restricted_guide_go,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface d, int w) {
+                                        Intent i = new Intent(
+                                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                        i.setData(Uri.parse(
+                                                "package:" + getPackageName()));
+                                        startActivity(i);
+                                    }
+                                })
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show();
             }
         });
         findViewById(R.id.battery_row).setOnClickListener(new View.OnClickListener() {

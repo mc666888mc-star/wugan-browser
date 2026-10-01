@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v10.5（versionCode 20）
+- 当前版本 / Current version：v10.6（versionCode 21）
 - 开源协议 / License：GPLv3
 
 ---
@@ -75,6 +75,11 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v10.6（受限制设置三步指引）
+
+- 点「应用信息」先弹三步指引：右上角 ⋮ → 允许受限制的设置 → 允许，照着点两下就行；开完返回，状态自动刷新成 ✓ 还是 ⚠️ 一眼看到
+- 说明：安卓没给直达"允许受限制的设置"开关的公开入口（这是系统安全设计，所有 App 都一样），能跳的最深就是应用信息页
 
 #### v10.5（首页居中搜索 + 标签页预览图）
 
@@ -245,6 +250,11 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v10.6 (restricted-settings 3-step guide)
+
+- Tapping "App info" now shows a 3-step guide first: ⋮ → Allow restricted settings → Allow — just follow the two taps; when you come back, the status auto-refreshes to ✓ or ⚠️
+- Note: Android offers no public entry to jump directly to the "Allow restricted settings" toggle (system security design, same for every app) — the App info page is the deepest jump possible
 
 #### v10.5 (centered home search + tab thumbnails)
 

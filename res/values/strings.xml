@@ -130,6 +130,10 @@
     <string name="taptest_sub">打开必出勾选框的测试页，几秒就知道点选灵不灵</string>
     <string name="jump_appinfo_title">应用信息</string>
     <string name="jump_appinfo_sub">一键直达 → 右上角 ⋮ → 允许受限制的设置（更新后要重开）</string>
+    <!-- v10.6：受限制设置三步指引（系统没给直达开关的入口，只能跳应用信息页） -->
+    <string name="restricted_guide_title">打开「允许受限制的设置」</string>
+    <string name="restricted_guide_msg">跳过去之后，按这三步点：\n\n1. 点右上角 ⋮（三个点）\n2. 点「允许受限制的设置」\n3. 点「允许」\n\n开完直接返回，这里的状态会自动刷新。</string>
+    <string name="restricted_guide_go">去开</string>
     <string name="jump_battery_title">电池优化</string>
     <string name="jump_battery_sub">一键直达 → 允许后台活动，防止服务被系统杀掉</string>
     <string name="a11y_off">状态：未开启（自动点选不工作）</string>
