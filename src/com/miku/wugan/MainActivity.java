@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
@@ -97,6 +98,8 @@ public class MainActivity extends Activity {
         String url;
         String title;
         boolean incognito;
+        /** v10.5：标签页预览缩略图（切换/打开列表时抓拍） */
+        Bitmap thumbnail;
         Tab(String u, boolean inc) {
             url = u;
             incognito = inc;
@@ -480,6 +483,37 @@ public class MainActivity extends Activity {
             if (ti != null) {
                 t.title = ti;
             }
+            // v10.5：顺手抓一张缩略图，给标签页预览用
+            Bitmap old = t.thumbnail;
+            t.thumbnail = captureThumbnail();
+            if (old != null && old != t.thumbnail) {
+                old.recycle();
+            }
+        }
+    }
+
+    /**
+     * v10.5：把当前 WebView 画到小 bitmap 上做缩略图。
+     * 失败（没画面、内存紧张等）返回 null，调用方当无图处理。
+     */
+    private Bitmap captureThumbnail() {
+        try {
+            int w = webView.getWidth();
+            int h = webView.getHeight();
+            if (w <= 0 || h <= 0) {
+                return null;
+            }
+            Bitmap full = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565);
+            webView.draw(new Canvas(full));
+            int tw = 144;
+            int th = Math.max(1, (int) (tw * (float) h / w));
+            Bitmap small = Bitmap.createScaledBitmap(full, tw, th, true);
+            if (small != full) {
+                full.recycle();
+            }
+            return small;
+        } catch (Throwable t) {
+            return null;
         }
     }
 
@@ -515,6 +549,11 @@ public class MainActivity extends Activity {
             return;
         }
         Tab t = tabs.remove(i);
+        // v10.5：顺手回收缩略图
+        if (t.thumbnail != null) {
+            t.thumbnail.recycle();
+            t.thumbnail = null;
+        }
         if (t.incognito) {
             // 无痕 tab：清掉它的 cookie 痕迹
             CookieManager cm = CookieManager.getInstance();
@@ -556,6 +595,19 @@ public class MainActivity extends Activity {
             row.setGravity(android.view.Gravity.CENTER_VERTICAL);
             row.setPadding(dp(4), dp(8), dp(4), dp(8));
             row.setBackgroundResource(rippleRes());
+
+            // v10.5：缩略图预览（无图时深灰占位）
+            ImageView thumb = new ImageView(this);
+            LinearLayout.LayoutParams tlp =
+                    new LinearLayout.LayoutParams(dp(64), dp(108));
+            tlp.setMargins(0, 0, dp(10), 0);
+            thumb.setLayoutParams(tlp);
+            thumb.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            thumb.setBackgroundColor(Color.parseColor("#2A2A2A"));
+            if (t.thumbnail != null && !t.thumbnail.isRecycled()) {
+                thumb.setImageBitmap(t.thumbnail);
+            }
+            row.addView(thumb);
 
             TextView tv = new TextView(this);
             String label = (t.incognito ? getString(R.string.tab_incognito_prefix) + " " : "")
@@ -1335,7 +1387,18 @@ public class MainActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view,
                                                    WebResourceRequest request) {
-                view.loadUrl(request.getUrl().toString());
+                Uri wurl = request.getUrl();
+                // v10.5：首页居中搜索框走 wugan://search?q=，直接解析跳转
+                if ("wugan".equals(wurl.getScheme())
+                        && "search".equals(wurl.getHost())) {
+                    String q = wurl.getQueryParameter("q");
+                    String target = resolveInput(q);
+                    if (target != null) {
+                        loadInCurrentTab(target);
+                    }
+                    return true;
+                }
+                view.loadUrl(wurl.toString());
                 return true;
             }
 

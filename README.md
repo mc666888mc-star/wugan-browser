@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v10.4（versionCode 19）
+- 当前版本 / Current version：v10.5（versionCode 20）
 - 开源协议 / License：GPLv3
 
 ---
@@ -75,6 +75,12 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v10.5（首页居中搜索 + 标签页预览图）
+
+- 首页加了居中搜索框：大 Logo + 圆角搜索条，输关键词或网址回车即达（走 `wugan://search` 交给 App 解析，沿用地址栏同一套"像网址直达、否则按默认引擎搜"，零 JS 桥接）
+- 标签页列表支持预览图：每行左侧加页面缩略图（页面加载完自动抓拍），一眼认出是哪个页；关闭标签页时顺手回收图片不漏内存
+- 图标说明：App 里用的本来就是 Material Icons（Google 开源，Apache 2.0），和"GitHub 开源现代图标库"说的是同一类，无需换
 
 #### v10.4（点选测试靶场 + 一键直达设置）
 
@@ -239,6 +245,12 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v10.5 (centered home search + tab thumbnails)
+
+- Centered search box on the home page: big logo + rounded search bar, type a keyword or URL and hit enter (goes through `wugan://search` and reuses the address bar's "URL goes direct, otherwise search with the default engine" logic — no JS bridge)
+- Tab list now shows thumbnails: each row gets a page snapshot on the left (captured automatically when a page finishes loading) so you can tell tabs apart at a glance; bitmaps are recycled when a tab closes
+- Icon note: the app already uses Material Icons (open-source by Google, Apache 2.0) — exactly the kind of "open-source modern icon library" suggested, so no swap needed
 
 #### v10.4 (tap-test range + settings shortcuts)
 

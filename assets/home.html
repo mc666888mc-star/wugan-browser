@@ -6,14 +6,40 @@
 <title>无感浏览器</title>
 <style>
 html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#121212}
-body{background-size:cover;background-position:center;background-repeat:no-repeat}
+body{background-size:cover;background-position:center;background-repeat:no-repeat;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:sans-serif;-webkit-tap-highlight-color:transparent}
+.logo{font-size:42px;font-weight:700;color:#fff;letter-spacing:10px;margin:0 0 28px 10px;
+  text-shadow:0 2px 14px rgba(0,0,0,.65)}
+.logo span{color:#7ee7f5}
+form{width:84%;max-width:430px;display:flex;align-items:center;
+  background:rgba(18,18,18,.72);border:1px solid rgba(255,255,255,.18);
+  border-radius:30px;padding:5px 5px 5px 20px;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+input{flex:1;min-width:0;background:transparent;border:0;outline:0;
+  color:#fff;font-size:16px;padding:10px 0}
+input::placeholder{color:rgba(255,255,255,.45)}
+button{border:0;border-radius:25px;background:#7ee7f5;color:#102027;
+  font-size:15px;font-weight:700;padding:11px 22px;white-space:nowrap}
+.hint{margin-top:16px;color:rgba(255,255,255,.55);font-size:12px;
+  text-shadow:0 1px 6px rgba(0,0,0,.65)}
 </style>
 </head>
 <body>
+<div class="logo">无感<span>·</span>浏览</div>
+<form id="f"><input id="q" placeholder="搜索或输入网址" autocomplete="off" enterkeyhint="go"><button type="submit">搜索</button></form>
+<div class="hint">输入关键词或网址，回车即达</div>
 <script>
 function setWallpaper(url){
   if(url){document.body.style.backgroundImage="url('"+url+"')";}
 }
+document.getElementById('f').onsubmit=function(e){
+  e.preventDefault();
+  var q=document.getElementById('q').value.trim();
+  if(!q){return false;}
+  /* v10.5：走自定义 scheme 交给 App，零 JS 桥接 */
+  location.href='wugan://search?q='+encodeURIComponent(q);
+  return false;
+};
 </script>
 </body>
 </html>
