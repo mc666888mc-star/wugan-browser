@@ -166,4 +166,6 @@
     <string name="dl_enqueued">已加入下载：%1$s</string>
     <string name="dl_no_app">没有能打开这个文件的应用</string>
     <string name="download_video">下载视频</string>
+    <string name="player_lock">锁定</string>
+    <string name="player_unlock">解锁</string>
 </resources>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/player_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000">
@@ -10,12 +11,50 @@
         android:layout_height="match_parent"
         android:layout_gravity="center" />
 
+    <!-- 锁定后挡住所有触摸（解锁按钮除外），防误触 -->
+    <View
+        android:id="@+id/touch_blocker"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:visibility="gone" />
+
+    <!-- 双击快进/快退的提示 -->
+    <TextView
+        android:id="@+id/skip_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="#99000000"
+        android:padding="16dp"
+        android:textColor="#FFFFFF"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
     <LinearLayout
+        android:id="@+id/top_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
         android:layout_margin="16dp"
         android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/speed_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:textSize="12sp"
+            android:text="1.0x" />
+
+        <Button
+            android:id="@+id/lock_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:textSize="12sp"
+            android:text="@string/player_lock" />
 
         <Button
             android:id="@+id/download_button"
@@ -33,5 +72,16 @@
             android:text="@string/rotate" />
 
     </LinearLayout>
+
+    <!-- 锁定状态下唯一的解锁入口 -->
+    <Button
+        android:id="@+id/unlock_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:textSize="12sp"
+        android:text="@string/player_unlock"
+        android:visibility="gone" />
 
 </FrameLayout>

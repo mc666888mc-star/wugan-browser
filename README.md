@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v9.0（versionCode 14）
+- 当前版本 / Current version：v10.0（versionCode 15）
 - 开源协议 / License：GPLv3
 
 ---
@@ -24,7 +24,7 @@
 7. **浏览历史 + 收藏夹**：SQLite 记录，点击打开，一键清空；网址列表里 %XX 编码会解码成中文显示（v8.2）。
 8. **无痕模式**：开启后不记录历史；退出时清除 Cookie/缓存/网页历史（会话级无痕）。
 9. **域名级广告拦截**：`shouldInterceptRequest` 按域名拦截（精确 + 子域名后缀匹配），内置 StevenBlack 完整规则（约 7.4 万条），默认开启，可一键开关、在线更新。
-10. **视频嗅探 + 内置播放器**：被动嗅探页面中的直链视频（.mp4/.m3u8/.webm/.mov/.flv/.m4v），状态栏提示"点击播放"，进内置播放器（VideoView + MediaController，原生支持 HLS），一键横竖屏。
+10. **视频嗅探 + 内置播放器**：被动嗅探页面中的直链视频（.mp4/.m3u8/.webm/.mov/.flv/.m4v），状态栏提示"点击播放"，进内置播放器（VideoView + MediaController，原生支持 HLS），一键横竖屏；v10 加了双击快进/快退 10 秒、倍速（0.5x~2x）、屏幕锁定。
 11. **本地壁纸主页**：全离线壁纸库，可从相册选图、长按网页图片设为壁纸，支持轮换（v5/v7）。
 12. **中英双语**（v8.4）：英文系统全英文显示（Wugan Browser），中文系统不受影响，其他语言默认回退中文。
 13. **内置下载器**（v9）：多线程断点续传，下载页有进度条 + 实时速度 + 剩余时间，可暂停/继续/取消；支持直链 m3u8（分片自动合并）。播放器里有「下载视频」按钮。
@@ -75,6 +75,12 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v10.0（播放器升级）
+
+- 双击屏幕左/右半边：快退/快进 10 秒，中间弹出 -10s/+10s 提示
+- 倍速按钮：0.5x → 1.0x → 1.25x → 1.5x → 2.0x 循环切换（按钮上直接显示当前倍速）
+- 锁定按钮：锁住后隐藏所有按钮和控制条，只留一个「解锁」，防手滑误触
 
 #### v9.0（内置下载器）
 
@@ -155,7 +161,7 @@ GPLv3（见 `LICENSE` 文件）。
 7. **History + bookmarks**: SQLite-backed, tap to reopen, one-tap clear; percent-encoded URLs are decoded for display (v8.2).
 8. **Incognito**: no history while on; cookies/cache/history wiped on exit (session-level).
 9. **Domain-level ad blocking**: blocked in `shouldInterceptRequest` (exact + subdomain-suffix matching), bundled with the full StevenBlack list (~74k rules), on by default, one-tap toggle, updatable online.
-10. **Video sniffing + built-in player**: passively sniffs direct video links (.mp4/.m3u8/.webm/.mov/.flv/.m4v), status-bar prompt to play, built-in player (VideoView + MediaController, native HLS), one-tap landscape/portrait.
+10. **Video sniffing + built-in player** (v10: double-tap to skip ±10 s, speed 0.5x–2x, screen lock): passively sniffs direct video links (.mp4/.m3u8/.webm/.mov/.flv/.m4v), status-bar prompt to play, built-in player (VideoView + MediaController, native HLS), one-tap landscape/portrait.
 11. **Local wallpaper home**: fully offline wallpaper library — pick from gallery, long-press any web image to set as wallpaper, rotation supported (v5/v7).
 12. **Bilingual** (v8.4): full English UI on English-system devices (as "Wugan Browser"); Chinese elsewhere.
 13. **Built-in downloader** (v9): multi-threaded with resume; downloads page shows progress bar + live speed + ETA, with pause/resume/cancel; direct m3u8 links get their segments auto-merged. The player has a "Download video" button.
@@ -206,6 +212,12 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v10.0 (player upgrade)
+
+- Double-tap left/right half of the screen to skip back/forward 10 s, with a -10s/+10s indicator
+- Speed button cycles 0.5x → 1.0x → 1.25x → 1.5x → 2.0x (current speed shown on the button)
+- Lock button hides all controls, leaving only "Unlock" — no more accidental touches
 
 #### v9.0 (built-in downloader)
 

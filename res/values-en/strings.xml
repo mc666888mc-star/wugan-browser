@@ -166,4 +166,6 @@
     <string name="dl_enqueued">Added to downloads: %1$s</string>
     <string name="dl_no_app">No app can open this file</string>
     <string name="download_video">Download video</string>
+    <string name="player_lock">Lock</string>
+    <string name="player_unlock">Unlock</string>
 </resources>
