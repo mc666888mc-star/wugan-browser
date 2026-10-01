@@ -6,7 +6,7 @@
 > A real-kernel browser that minimizes Cloudflare challenge interruptions: consistent fingerprint, reused clearance cookies, and automatic tapping of checkbox-style challenges.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v10.2（versionCode 17）
+- 当前版本 / Current version：v10.3（versionCode 18）
 - 开源协议 / License：GPLv3
 
 ---
@@ -75,6 +75,14 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v10.3（下载器修文件名/打开/重命名）
+
+- APK 下载不再变 `.bin`：根因是 WebView 传过来的真文件名（`Content-Disposition`）和 MIME 被 `enqueue()` 直接扔掉、只拿 URL 猜名字。现在全接住，Worker 还拿响应头再纠正一次（`Content-Disposition` → URL 路径 → `Content-Type` 补后缀）
+- 下载完能正常在别的 App 打开：之前 MIME 跟着错成 `octet-stream`，装 APK 也认不出；精确 MIME 打不开时自动退到 `*/*` 让用户选
+- 每行右侧加 ⋮ 菜单：打开 / 在文件管理器中打开 / 重命名 / 删除，暂停/继续/重试/取消都收进菜单
+- 「在文件管理器中打开」直达 `Download/无感浏览器` 文件夹；支持重命名（不写后缀自动保留原来的）
+- 附带修了 API 26-28 上"打开"必失败的坑：`file://` 会被系统拦，新增零依赖的 `SimpleFileProvider` 对外分享
 
 #### v10.2（挂件级自动点选）
 
@@ -224,6 +232,14 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v10.3 (downloader filename/open/rename fixes)
+
+- APK downloads no longer become `.bin`: the real filename (`Content-Disposition`) and MIME type handed over by WebView were being dropped and the name was guessed from the URL alone. They are now honored, and the worker double-checks against response headers (`Content-Disposition` → URL path → `Content-Type` extension fallback)
+- Finished downloads now open properly in other apps (MIME used to be wrongly `octet-stream`, so even APK installers rejected them); falls back to `*/*` so the user can pick when no app handles the exact type
+- Each row gets a ⋮ menu on the right: Open / Open in file manager / Rename / Delete, with Pause/Resume/Retry/Cancel inside
+- "Open in file manager" jumps straight to the `Download/无感浏览器` folder; rename supported (original extension kept if you don't type one)
+- Also fixed "Open" always failing on API 26-28: `file://` URIs are blocked by the system, so a dependency-free `SimpleFileProvider` was added for sharing
 
 #### v10.2 (widget-level auto-tap)
 
