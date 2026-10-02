@@ -6,7 +6,7 @@
 > A clean, real-kernel browser with built-in VPN: one-tap encrypted tunnel, consistent fingerprint, reused clearance cookies, native access to the open internet.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v13.1（versionCode 31）
+- 当前版本 / Current version：v13.2（versionCode 32）
 - 开源协议 / License：GPLv3
 
 ---
@@ -79,6 +79,14 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v13.2（新首页 + 动画顺滑）
+
+- **首页重写**：白泽用 GPT 重做了主界面（深色氛围光晕 + 呼吸边缘光搜索框 + 入场动画），
+  接口与旧版一致（`setWallpaper()` / `wugan://search?q=`），直接替换，壁纸功能照常。
+- **动画不够丝滑修了**：底部菜单 slide_up/slide_down 原来是线性插值（匀速，机器感重），
+  换成 Material 的 fast_out_slow_in / fast_out_linear_in，进场 300ms、退场 250ms。
+- 零信任顺延到 v13.3。
 
 #### v13.1（VPN 白名单收紧 + 通知权限）
 
@@ -310,6 +318,12 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v13.2 (new homepage + smoother animations)
+
+- Homepage rewritten (contributed by a friend): dark ambient glow + breathing-edge search box + entrance animations; same interface contract as before (`setWallpaper()` / `wugan://search?q=`), wallpaper feature unchanged
+- Fixed "animations not smooth": bottom-menu slide_up/slide_down used a linear interpolator (robotic constant speed), switched to Material fast_out_slow_in / fast_out_linear_in, 300ms in / 250ms out
+- Zero Trust moved to v13.3
 
 #### v13.1 (VPN whitelist tightening + notification permission)
 

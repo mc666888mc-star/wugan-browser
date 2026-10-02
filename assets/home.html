@@ -1,45 +1,468 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
 <title>无感浏览器</title>
 <style>
-html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#121212}
-body{background-size:cover;background-position:center;background-repeat:no-repeat;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  font-family:sans-serif;-webkit-tap-highlight-color:transparent}
-.logo{font-size:42px;font-weight:700;color:#fff;letter-spacing:10px;margin:0 0 28px 10px;
-  text-shadow:0 2px 14px rgba(0,0,0,.65)}
-.logo span{color:#7ee7f5}
-form{width:84%;max-width:430px;display:flex;align-items:center;
-  background:rgba(18,18,18,.72);border:1px solid rgba(255,255,255,.18);
-  border-radius:30px;padding:5px 5px 5px 20px;box-shadow:0 4px 18px rgba(0,0,0,.35)}
-input{flex:1;min-width:0;background:transparent;border:0;outline:0;
-  color:#fff;font-size:16px;padding:10px 0}
-input::placeholder{color:rgba(255,255,255,.45)}
-button{border:0;border-radius:25px;background:#7ee7f5;color:#102027;
-  font-size:15px;font-weight:700;padding:11px 22px;white-space:nowrap}
-.hint{margin-top:16px;color:rgba(255,255,255,.55);font-size:12px;
-  text-shadow:0 1px 6px rgba(0,0,0,.65)}
+*{box-sizing:border-box}
+
+html,body{
+  margin:0;
+  min-height:100%;
+  background:#090d12;
+}
+
+body{
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.wallpaper,.ambient,.veil{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+}
+
+.wallpaper{
+  background:center/cover no-repeat;
+}
+
+.ambient{
+  overflow:hidden;
+  transition:opacity .6s;
+}
+
+.has-wallpaper .ambient{opacity:.45}
+
+.orb{
+  position:absolute;
+  width:70vmax;
+  height:70vmax;
+  border-radius:50%;
+  will-change:transform;
+}
+
+.orb-a{
+  top:-40vmax;
+  left:-20vmax;
+  background:radial-gradient(circle,rgba(48,175,167,.32),transparent 65%);
+  animation:drift-a 18s ease-in-out infinite alternate;
+}
+
+.orb-b{
+  right:-35vmax;
+  bottom:-38vmax;
+  background:radial-gradient(circle,rgba(102,85,193,.3),transparent 65%);
+  animation:drift-b 22s ease-in-out infinite alternate;
+}
+
+.orb-c{
+  top:20%;
+  left:20%;
+  width:45vmax;
+  height:45vmax;
+  background:radial-gradient(circle,rgba(73,123,176,.17),transparent 65%);
+  animation:drift-c 15s ease-in-out infinite alternate;
+}
+
+.pointer{
+  position:absolute;
+  top:0;
+  left:0;
+  width:480px;
+  height:480px;
+  margin:-240px;
+  background:radial-gradient(circle,rgba(157,237,222,.08),transparent 65%);
+  opacity:0;
+  transition:opacity .5s;
+  will-change:transform;
+}
+
+.veil{
+  background:rgba(4,8,13,.1);
+  transition:background .6s;
+}
+
+.has-wallpaper .veil{
+  background:rgba(4,8,13,.38);
+}
+
+main{
+  position:relative;
+  min-height:100vh;
+  min-height:100svh;
+  display:grid;
+  place-items:center;
+  padding:32px 24px;
+}
+
+.content{
+  width:min(100%,480px);
+  text-align:center;
+  transform:translateY(-5vh);
+}
+
+h1{
+  margin:0 0 36px;
+  padding-left:.32em;
+  font-size:38px;
+  font-weight:400;
+  letter-spacing:.32em;
+  animation:appear 1s both;
+}
+
+h1 span{
+  color:#effaf8;
+  animation:logo-glow 7s ease-in-out infinite;
+}
+
+.search-shell{
+  position:relative;
+  border-radius:22px;
+  isolation:isolate;
+  animation:appear 1s .12s both;
+}
+
+/* 缓慢旋转的边缘光 */
+.search-shell::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  overflow:hidden;
+  border-radius:inherit;
+  background:rgba(255,255,255,.14);
+}
+
+.edge{
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  overflow:hidden;
+  border-radius:inherit;
+  pointer-events:none;
+}
+
+.edge::before{
+  content:"";
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:560px;
+  height:560px;
+  margin:-280px;
+  background:conic-gradient(
+    transparent 0deg,
+    transparent 100deg,
+    rgba(163,237,224,.7) 155deg,
+    transparent 190deg,
+    transparent 285deg,
+    rgba(157,164,237,.5) 330deg,
+    transparent 360deg
+  );
+  animation:rotate 10s linear infinite;
+}
+
+.search-shell::after{
+  content:"";
+  position:absolute;
+  inset:8px;
+  z-index:-2;
+  border-radius:inherit;
+  background:rgba(116,221,204,.1);
+  filter:blur(22px);
+  animation:breathe 5s ease-in-out infinite;
+  transition:background .3s;
+}
+
+.search-shell:focus-within::after{
+  background:rgba(116,221,204,.24);
+}
+
+form{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:1px;
+  padding:7px 7px 7px 20px;
+  border-radius:21px;
+  background:#141c23;
+  transition:background .3s;
+}
+
+form:focus-within{background:#18242b}
+
+.search-icon{
+  flex-shrink:0;
+  width:19px;
+  height:19px;
+  color:#8c9caa;
+  transition:color .3s,transform .3s;
+}
+
+form:focus-within .search-icon{
+  color:#b5ede0;
+  transform:rotate(-12deg);
+}
+
+input{
+  flex:1;
+  width:0;
+  min-width:0;
+  height:44px;
+  padding:0;
+  border:0;
+  outline:none;
+  background:transparent;
+  color:#f4f8fa;
+  caret-color:#b5ede0;
+  font:inherit;
+  font-size:16px;
+  -webkit-appearance:none;
+  appearance:none;
+}
+
+input::placeholder{color:#929eaa}
+
+button{
+  position:relative;
+  flex-shrink:0;
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  padding:0;
+  border:0;
+  border-radius:15px;
+  overflow:hidden;
+  background:#b5ede0;
+  color:#183c34;
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:background .25s,transform .25s,box-shadow .25s;
+}
+
+button svg{
+  width:20px;
+  height:20px;
+  transition:transform .25s;
+}
+
+button:active{transform:scale(.9)}
+
+button:focus-visible{
+  outline:2px solid #fff;
+  outline-offset:4px;
+}
+
+.ripple{
+  position:absolute;
+  width:12px;
+  height:12px;
+  margin:-6px;
+  border-radius:50%;
+  background:rgba(255,255,255,.6);
+  pointer-events:none;
+  animation:ripple .6s ease-out forwards;
+}
+
+svg{display:block}
+
+@media(hover:hover){
+  button:hover{
+    background:#d1fff2;
+    box-shadow:0 0 22px rgba(181,237,224,.18);
+  }
+  button:hover svg{transform:translateX(3px)}
+}
+
+@media(max-height:420px){
+  .content{transform:none}
+  h1{margin-bottom:24px}
+}
+
+@keyframes drift-a{
+  to{transform:translate(35vw,25vh) scale(1.15)}
+}
+@keyframes drift-b{
+  to{transform:translate(-30vw,-25vh) scale(1.2)}
+}
+@keyframes drift-c{
+  to{transform:translate(-20vw,15vh) scale(.8)}
+}
+@keyframes rotate{
+  to{transform:rotate(360deg)}
+}
+@keyframes breathe{
+  0%,100%{opacity:.35;transform:scale(.98)}
+  50%{opacity:1;transform:scale(1.03)}
+}
+@keyframes logo-glow{
+  0%,100%{text-shadow:0 0 18px rgba(181,237,224,.05)}
+  50%{text-shadow:0 0 28px rgba(181,237,224,.3)}
+}
+@keyframes appear{
+  from{opacity:0;transform:translateY(14px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes ripple{
+  to{transform:scale(12);opacity:0}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation:none!important;
+    transition:none!important;
+  }
+  .pointer{display:none}
+}
 </style>
 </head>
 <body>
-<div class="logo">无感<span>·</span>浏览</div>
-<form id="f"><input id="q" placeholder="搜索或输入网址" autocomplete="off" enterkeyhint="go"><button type="submit">搜索</button></form>
-<div class="hint">输入关键词或网址，回车即达</div>
+<div class="wallpaper" id="wallpaper" aria-hidden="true"></div>
+
+<div class="ambient" aria-hidden="true">
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+  <div class="pointer" id="pointer"></div>
+</div>
+
+<div class="veil" aria-hidden="true"></div>
+
+<main>
+  <div class="content">
+    <h1><span>无感</span></h1>
+
+    <div class="search-shell">
+      <div class="edge" aria-hidden="true"></div>
+
+      <form id="f" role="search" aria-label="网页搜索">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5"
+            stroke="currentColor" stroke-width="1.7"/>
+          <path d="m16 16 4 4"
+            stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+
+        <input
+          id="q"
+          type="text"
+          placeholder="搜索或输入网址"
+          aria-label="搜索或输入网址"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          enterkeyhint="go"
+        >
+
+        <button id="go" type="submit" aria-label="前往">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14m-6-6 6 6-6 6"
+              stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+</main>
+
 <script>
-function setWallpaper(url){
-  if(url){document.body.style.backgroundImage="url('"+url+"')";}
+/* App 壁纸接口 */
+function setWallpaper(url) {
+  var value = typeof url === 'string' ? url.trim() : '';
+  var wallpaper = document.getElementById('wallpaper');
+
+  if (value) {
+    wallpaper.style.backgroundImage = 'url(' + JSON.stringify(value) + ')';
+  } else {
+    wallpaper.style.removeProperty('background-image');
+  }
+
+  document.body.classList.toggle('has-wallpaper', Boolean(value));
 }
-document.getElementById('f').onsubmit=function(e){
-  e.preventDefault();
-  var q=document.getElementById('q').value.trim();
-  if(!q){return false;}
-  /* v10.5：走自定义 scheme 交给 App，零 JS 桥接 */
-  location.href='wugan://search?q='+encodeURIComponent(q);
-  return false;
-};
+
+(function () {
+  var form = document.getElementById('f');
+  var input = document.getElementById('q');
+  var button = document.getElementById('go');
+  var pointer = document.getElementById('pointer');
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    var query = input.value.trim();
+
+    if (!query) {
+      input.focus();
+      return;
+    }
+
+    window.location.href = 'wugan://search?q=' + encodeURIComponent(query);
+  });
+
+  /* 按下时的涟漪 */
+  button.addEventListener('pointerdown', function (event) {
+    if (reducedMotion.matches) return;
+
+    var rect = button.getBoundingClientRect();
+    var ripple = document.createElement('span');
+
+    ripple.className = 'ripple';
+    ripple.style.left = (event.clientX - rect.left) + 'px';
+    ripple.style.top = (event.clientY - rect.top) + 'px';
+
+    button.appendChild(ripple);
+    ripple.addEventListener('animationend', function () {
+      ripple.remove();
+    });
+  });
+
+  /* 光晕平滑跟随，停止移动后停止逐帧计算 */
+  var x = window.innerWidth / 2;
+  var y = window.innerHeight / 2;
+  var targetX = x;
+  var targetY = y;
+  var frame = 0;
+
+  function follow() {
+    x += (targetX - x) * .09;
+    y += (targetY - y) * .09;
+
+    pointer.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+
+    if (Math.abs(targetX - x) + Math.abs(targetY - y) > .5) {
+      frame = requestAnimationFrame(follow);
+    } else {
+      frame = 0;
+    }
+  }
+
+  window.addEventListener('pointermove', function (event) {
+    if (event.pointerType !== 'mouse' || reducedMotion.matches) return;
+
+    targetX = event.clientX;
+    targetY = event.clientY;
+    pointer.style.opacity = '1';
+
+    if (!frame) frame = requestAnimationFrame(follow);
+  }, { passive: true });
+
+  function hidePointer() {
+    pointer.style.opacity = '0';
+    cancelAnimationFrame(frame);
+    frame = 0;
+  }
+
+  document.documentElement.addEventListener('pointerleave', hidePointer);
+  window.addEventListener('blur', hidePointer);
+})();
 </script>
 </body>
 </html>
