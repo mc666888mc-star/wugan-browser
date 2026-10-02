@@ -5,7 +5,10 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.Manifest;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
@@ -40,6 +43,7 @@ public class SettingsActivity extends Activity {
 
     private static final int REQUEST_WALLPAPER = 1001;
     private static final int REQUEST_VPN_AUTH = 1002;
+    private static final int REQUEST_NOTIF = 1003;
 
     private SharedPreferences prefs;
     private HistoryDbHelper historyDb;
@@ -251,6 +255,15 @@ public class SettingsActivity extends Activity {
             refreshVpnStatus();
             return;
         }
+        // v13.1：一键开启时先要通知权限（常驻通知的速率显示/断开按钮依赖它）。
+        // 不阻塞流程：拒绝也照常连 VPN，只是状态栏不显示通知。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    REQUEST_NOTIF);
+        }
         vpnButton.setEnabled(false);
         vpnStatus.setText(getString(R.string.vpn_registering));
         new Thread(new Runnable() {
@@ -419,6 +432,22 @@ public class SettingsActivity extends Activity {
                     Intent.createChooser(i, getString(R.string.pick_wallpaper)), REQUEST_WALLPAPER);
         } catch (Exception e) {
             Toast.makeText(this, getString(R.string.gallery_unavailable), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions,
+                                           int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions,
+                grantResults);
+        // v13.1：通知权限被拒不影响 VPN，只是不显示常驻通知，如实告诉用户
+        if (requestCode == REQUEST_NOTIF
+                && (grantResults.length == 0
+                        || grantResults[0]
+                                != PackageManager.PERMISSION_GRANTED)) {
+            Toast.makeText(this, getString(R.string.notif_denied),
+                    Toast.LENGTH_LONG).show();
         }
     }
 

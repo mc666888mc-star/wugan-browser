@@ -6,7 +6,7 @@
 > A clean, real-kernel browser with built-in VPN: one-tap encrypted tunnel, consistent fingerprint, reused clearance cookies, native access to the open internet.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v13.0（versionCode 30）
+- 当前版本 / Current version：v13.1（versionCode 31）
 - 开源协议 / License：GPLv3
 
 ---
@@ -79,6 +79,16 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v13.1（VPN 白名单收紧 + 通知权限）
+
+- **VPN 只接管浏览器自身流量**：`addAllowedApplication(getPackageName())` 写死白名单，
+  系统油管等其他 App 的包不再进隧道（v13.0 是全机流量）。浏览器内 WebView、下载器、
+  WebRTC、DNS 照常走隧道，ipleak 依然干净。
+- **一键开启时申请通知权限**：Android 13+ 上常驻通知（速率/协议/断开按钮）依赖
+  `POST_NOTIFICATIONS`；拒绝也不阻塞连接，只是状态栏不显示通知，如实 toast 告知。
+- 设置页文案同步：不再写"手机所有应用流量"，改为"仅浏览器自身流量"。
+- 零信任顺延到 v13.2。
 
 #### v13.0（系统级 VPN：VpnService + TUN）
 
@@ -300,6 +310,12 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v13.1 (VPN whitelist tightening + notification permission)
+
+- VPN now captures **only this app's own traffic**: `addAllowedApplication(getPackageName())` is hardcoded, so other apps (e.g. the system YouTube app) no longer go through the tunnel (v13.0 captured all device traffic). In-browser WebView, downloader, WebRTC and DNS still use the tunnel — ipleak stays clean
+- Notification permission is requested on one-tap enable: the persistent notification (speeds/protocol/disconnect) needs `POST_NOTIFICATIONS` on Android 13+; declining doesn't block the connection, it just hides the status-bar notification (said plainly in a toast)
+- Settings copy updated accordingly ("browser traffic only"). Zero Trust moved to v13.2
 
 #### v13.0 (system-level VPN: VpnService + TUN)
 

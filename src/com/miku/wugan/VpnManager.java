@@ -16,7 +16,8 @@ import mobile.Mobile;
  * v13.0 内置 VPN 唯一入口。
  *
  * v12.x 是"应用内 SOCKS5"（只有浏览器流量走隧道，WebRTC/DNS 照样泄漏），
- * v13 起走系统级 VPN：VpnService + TUN，手机所有流量都进 WARP 隧道。
+ * v13 起走 VpnService + TUN。
+ * v13.1 起白名单写死：只接管浏览器自身流量，其他 App 不进隧道。
  * 注册逻辑不变（Mobile.registerAccount/enrollDevice），连接/断开改走
  * VpnTunnelService。旧的 startSocks 应用内代理路径已删。
  *

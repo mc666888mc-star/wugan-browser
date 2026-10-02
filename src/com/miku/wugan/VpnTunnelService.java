@@ -25,7 +25,9 @@ import mobile.TunnelController;
  * v12.x 是"应用内 SOCKS5"：只有浏览器自己的 WebView/下载器流量走隧道，
  * WebRTC、DNS、其他 App 的流量全部直连——ipleak 实锤泄漏。
  * v13 改走验证过的路子（抄 exxojay/usque-android 的 UsqueVpnService）：
- * 建 TUN 接口，所有 IP 流量进隧道，DNS 也走 1.1.1.1。
+ * 建 TUN 接口，DNS 也走 1.1.1.1。
+ *
+ * v13.1 收紧：白名单写死，只接管浏览器自身流量——其他 App 不进隧道。
  *
  * 引擎还是同一份 Go 代码（gomobile JNI），只是从 startSocks 换成 startVpn。
  * 连接策略：先 QUIC/H3，15 秒连不上或报 error 就 stop 后换 HTTP2 重试一次。
@@ -268,7 +270,9 @@ public class VpnTunnelService extends VpnService {
     }
 
     /**
-     * 建 TUN 接口。IPv4 路由走 0.0.0.0/0 但抠掉 endpoint 的 /32（防环路：
+     * 建 TUN 接口。v13.1 起白名单模式写死：只接管本 App 自身流量，
+     * 系统油管等其他 App 不进隧道（产品定位，不是 bug）。
+     * 路由仍走 0.0.0.0/0 但抠掉 endpoint 的 /32（防环路：
      * 引擎直连 endpoint 的包不能再进 TUN，否则死循环）。
      * QUIC 和 H2 的 endpoint 都抠掉——重试换协议时 endpoint 会变。
      */
@@ -276,6 +280,9 @@ public class VpnTunnelService extends VpnService {
                              String epV4, String epH2V4) {
         try {
             Builder b = new Builder();
+            // v13.1 写死：白名单只放自己——TUN 只接管浏览器自身流量。
+            // 其他 App（系统油管等）的包根本不会进 TUN。
+            b.addAllowedApplication(getPackageName());
             b.addAddress(stripPrefix(ipv4), 32);
             if (ipv6 != null && !ipv6.isEmpty()) {
                 b.addAddress(stripPrefix(ipv6), 128);
