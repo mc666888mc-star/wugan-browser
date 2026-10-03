@@ -89,9 +89,7 @@ public class MainActivity extends Activity {
     private static final int REQUEST_WALLPAPER = 1001;
 
     private static final int SNIFF_MAX = 20;
-    private static final String[] VIDEO_EXTS = {
-            ".mp4", ".m3u8", ".webm", ".mov", ".flv", ".m4v"
-    };
+    // 视频后缀表已搬到 VideoSniffer（isVideoUrl），此处不再重复定义
 
     /** 标签页模型：单 WebView 复用，切换时保存/恢复 url */
     private static class Tab {
@@ -1516,31 +1514,11 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * 被动嗅探视频直链：去掉 query/fragment 后按后缀判定。
+     * 被动嗅探视频直链：匹配逻辑抽到 VideoSniffer（纯 Java，可单测）。
      * 运行在 WebView 的网络线程，UI 更新一律 post 到主线程。
      */
     private void sniffVideoUrl(String url) {
-        if (url == null) {
-            return;
-        }
-        String u = url;
-        int q = u.indexOf('?');
-        if (q >= 0) {
-            u = u.substring(0, q);
-        }
-        int h = u.indexOf('#');
-        if (h >= 0) {
-            u = u.substring(0, h);
-        }
-        u = u.toLowerCase(Locale.ROOT);
-        boolean hit = false;
-        for (String ext : VIDEO_EXTS) {
-            if (u.endsWith(ext)) {
-                hit = true;
-                break;
-            }
-        }
-        if (!hit) {
+        if (!VideoSniffer.isVideoUrl(url)) {
             return;
         }
         boolean added;

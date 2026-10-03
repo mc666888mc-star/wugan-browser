@@ -6,7 +6,7 @@
 > A clean, real-kernel browser with built-in VPN: one-tap encrypted tunnel, consistent fingerprint, reused clearance cookies, native access to the open internet.
 
 - 包名 / Package：`com.miku.wugan` ｜ minSdk 26 ｜ targetSdk 34 ｜ 零第三方依赖 / zero third-party dependencies
-- 当前版本 / Current version：v13.2（versionCode 32）
+- 当前版本 / Current version：v13.3（versionCode 33）
 - 开源协议 / License：GPLv3
 
 ---
@@ -79,6 +79,16 @@ GPLv3（见 `LICENSE` 文件）。
 图标素材：Material Icons by Google，Apache License 2.0（`res/drawable-xxxhdpi/` 下的 `ic_*.png`，Round 风格，原图为黑色，填充为白色后收录）。
 
 ### 更新日志
+
+#### v13.3（修横屏重建 + 油管嗅探）
+
+- **横屏不再跳回首页**：MainActivity 没声明 `configChanges`，一横屏就被系统销毁重建，
+  WebView 回到首页（带壁纸，看着像"跳回壁纸界面"）。加上浏览器标配的
+  `orientation|screenSize|screenLayout|keyboardHidden`，旋转不再重建。
+- **嗅探支持 YouTube**：旧逻辑"去 query 后按后缀判定"，但油管媒体 URL 是
+  `googlevideo.com/videoplayback?...`，path 上没后缀，永远命中不了。匹配逻辑抽成
+  纯 Java 的 `VideoSniffer`（JVM 单测 9 项全过），加 host+path 识别。
+- 零信任顺延到 v13.4。
 
 #### v13.2（新首页 + 动画顺滑）
 
@@ -318,6 +328,12 @@ GPLv3 (see `LICENSE`).
 Icons: Material Icons by Google, Apache License 2.0 (the `ic_*.png` files under `res/drawable-xxxhdpi/`, Round style, recolored white from black originals).
 
 ### Changelog
+
+#### v13.3 (rotation fix + YouTube sniffing)
+
+- Rotation no longer kicks you back to the homepage: MainActivity didn't declare `configChanges`, so the system destroyed and recreated it on every rotation and the WebView reloaded the homepage. Added the standard browser `orientation|screenSize|screenLayout|keyboardHidden`
+- Sniffing now catches YouTube: the old "strip query, match extension" logic could never hit YouTube's `googlevideo.com/videoplayback?...` URLs (no extension in path). Matching extracted into pure-Java `VideoSniffer` (9 JVM unit tests pass), with host+path recognition
+- Zero Trust moved to v13.4
 
 #### v13.2 (new homepage + smoother animations)
 
